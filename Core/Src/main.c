@@ -39,6 +39,8 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+ADC_HandleTypeDef hadc1;
+
 I2C_HandleTypeDef hi2c1;
 
 I2S_HandleTypeDef hi2s3;
@@ -47,7 +49,12 @@ DMA_HandleTypeDef hdma_spi3_tx;
 UART_HandleTypeDef huart4;
 
 /* USER CODE BEGIN PV */
+// volatile
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
+static int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
+static int16_t triangleLookupTable[SAMPLE_NUMBER_LUT];
+static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
+static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
 Oscillator_t osc1;
 
 /* USER CODE END PV */
@@ -59,6 +66,7 @@ static void MX_DMA_Init(void);
 static void MX_UART4_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
+static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -103,6 +111,7 @@ uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2
 
 void feedDMAAudioBuffer(int16_t *buffer, uint16_t num_frames){
 	const float antipopFactor = 0.001;
+	//volatile ?
 	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) || HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
 
 	for(uint16_t i = 0; i < num_frames; i++){
@@ -145,7 +154,6 @@ void feedSinewaveTable(int16_t* sinusLookupTable, uint16_t tableSize, int32_t wa
 }
 
 void feedTriangleTable(int16_t* triangleLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	// generate a lookup table for a triangle
 	//we slice one period of the triangle in three equations y = ax + b
 	// y --> tab[i]
 	// x --> i
@@ -155,23 +163,22 @@ void feedTriangleTable(int16_t* triangleLookupTable, uint16_t tableSize, int32_t
 	// This will lead to have bad values at the extremes points (or not really precise as we want).
 	// Bit shifting is used to avoid some divisions.
 
-	const uint16_t quarterOfTheWave = tableSize >> 2;
-	const uint16_t halfOfTheWave = tableSize >> 1;
-	const uint16_t threeQuartersOfTheWave = quarterOfTheWave + halfOfTheWave;
+	const uint16_t quarterOfTheWavePeriod = tableSize >> 2;
+	const uint16_t halfOfTheWavePeriod = tableSize >> 1;
+	const uint16_t threeQuartersOfTheWavePeriod = quarterOfTheWavePeriod + halfOfTheWavePeriod;
 
 	for (uint16_t i = 0; i < tableSize; i++) {
-		if (i < quarterOfTheWave) {
-			triangleLookupTable[i] = (waveAmplitude * i) / quarterOfTheWave;
-		} else if (i < threeQuartersOfTheWave) {
-			triangleLookupTable[i] = - waveAmplitude * (i - quarterOfTheWave) / quarterOfTheWave + waveAmplitude;
+		if (i < quarterOfTheWavePeriod) {
+			triangleLookupTable[i] = (waveAmplitude * i) / quarterOfTheWavePeriod;
+		} else if (i < threeQuartersOfTheWavePeriod) {
+			triangleLookupTable[i] = - waveAmplitude * (i - quarterOfTheWavePeriod) / quarterOfTheWavePeriod + waveAmplitude;
 		} else {
-			triangleLookupTable[i] = waveAmplitude * (i - threeQuartersOfTheWave) / quarterOfTheWave - waveAmplitude;
+			triangleLookupTable[i] = waveAmplitude * (i - threeQuartersOfTheWavePeriod) / quarterOfTheWavePeriod - waveAmplitude;
 		}
 	}
 }
 
 void feedSawtoothTable(int16_t* sawtoothLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	// generate sawtooth table
 	for (uint16_t i = 0; i < tableSize; i++) {
 		sawtoothLookupTable[i] = (2 * waveAmplitude * i) / tableSize - waveAmplitude;
 	}
@@ -205,10 +212,6 @@ int main(void)
       "SAW\r\n",
       "SQUARE\r\n"
   };
-  int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
-  int16_t triangleLookupTable[SAMPLE_NUMBER_LUT];
-  int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
-  int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -231,6 +234,7 @@ int main(void)
   MX_UART4_Init();
   MX_I2C1_Init();
   MX_I2S3_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   // Configure CS43 audio chip
@@ -266,29 +270,31 @@ int main(void)
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
     	osc1.waveform = selectedWaveform;
         HAL_UART_Transmit(&huart4, (uint8_t*) waveformsAvailable[osc1.waveform], strlen(waveformsAvailable[osc1.waveform]), 10);
+
+		 if(osc1.waveform == SINUS){
+			 osc1.activeLookupTable = sineLookupTable;
+		 }
+		else if(osc1.waveform == TRIANGLE){
+			osc1.activeLookupTable = triangleLookupTable;
+		}
+		else if(osc1.waveform == SAWTOOTH){
+			osc1.activeLookupTable = sawtoothLookupTable;
+		}
+		else{
+			osc1.activeLookupTable = squareLookupTable;
+		 }
     }
 
-	 if(osc1.waveform == SINUS){
-		 osc1.activeLookupTable = sineLookupTable;
-	 }
-	else if(osc1.waveform == TRIANGLE){
-		osc1.activeLookupTable = triangleLookupTable;
-	}
-	else if(osc1.waveform == SAWTOOTH){
-		osc1.activeLookupTable = sawtoothLookupTable;
-	}
-	else{
-		osc1.activeLookupTable = squareLookupTable;
-	 }
+   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
+	osc1.frequency = 523.25;
+	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
+   }
+   else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
+	osc1.frequency = 783.99;
+	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
+   }
 
-    if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
-    	osc1.frequency = 523.25;
-    	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
-    }
-    else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
-    	osc1.frequency = 783.99;
-    	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
-    }
+
   }
     /* USER CODE END WHILE */
 
@@ -340,6 +346,58 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief ADC1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_ADC1_Init(void)
+{
+
+  /* USER CODE BEGIN ADC1_Init 0 */
+
+  /* USER CODE END ADC1_Init 0 */
+
+  ADC_ChannelConfTypeDef sConfig = {0};
+
+  /* USER CODE BEGIN ADC1_Init 1 */
+
+  /* USER CODE END ADC1_Init 1 */
+
+  /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+  */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_9;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN ADC1_Init 2 */
+
+  /* USER CODE END ADC1_Init 2 */
+
 }
 
 /**
@@ -473,9 +531,9 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(Audio_RST_GPIO_Port, Audio_RST_Pin, GPIO_PIN_RESET);
