@@ -50,13 +50,13 @@ DMA_HandleTypeDef hdma_spi3_tx;
 UART_HandleTypeDef huart4;
 
 /* USER CODE BEGIN PV */
-// volatile
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
 static int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t triangleLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
 Oscillator_t osc1;
+volatile uint8_t conversionADCCompleted = 0;
 
 /* USER CODE END PV */
 
@@ -197,6 +197,7 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	conversionADCCompleted = 1;
 }
 
 /* USER CODE END 0 */
@@ -210,6 +211,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
   Waveform_t selectedWaveform;
   uint16_t potentiometerRawValue;
+  LowPassFilter_EMA lowPassFilterEMA;
   const char* waveformsAvailable[] = {
       "NONE\r\n",
       "SINUS\r\n",
@@ -269,12 +271,25 @@ int main(void)
   // ADC in DMA mode
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &potentiometerRawValue, 1);
 
+  // init low pass filter to get clean potentiometer ADC inputs
+  lowPassFilterEMA.alpha = 0.1;
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while(1){
     selectedWaveform = getUserWaveform();
+
+    if(conversionADCCompleted){
+    	lowPassFilterEMA.output = lowPassFilterEMA.alpha * (float)potentiometerRawValue + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+    	conversionADCCompleted = 0;
+    }
+
+
+    printf("%f\r\n", lowPassFilterEMA.output);
+    //HAL_Delay(100);
 
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
     	osc1.waveform = selectedWaveform;

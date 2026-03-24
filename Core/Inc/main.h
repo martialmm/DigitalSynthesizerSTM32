@@ -54,6 +54,11 @@ typedef struct {
     Waveform_t waveform;
 } Oscillator_t;
 
+typedef struct{
+	float alpha; // [0..1]: 0 ==> max filtering / 1 ==> no filtering
+	float output;
+} LowPassFilter_EMA;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
