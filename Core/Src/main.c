@@ -225,6 +225,22 @@ float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) 
 	return lowPassFilterEMA.output;
 }
 
+int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
+	 if(selectedWaveform == SINUS){
+		 return sineLookupTable;
+	 }
+	else if(selectedWaveform == TRIANGLE){
+		return triangleLookupTable;
+	}
+	else if(selectedWaveform == SAWTOOTH){
+		return sawtoothLookupTable;
+	}
+	else{
+		return squareLookupTable;
+	 }
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -300,16 +316,11 @@ int main(void)
   // ADC in DMA mode
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &potentiometerRawValue, 1);
 
-
-
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while(1){
-    selectedWaveform = getUserWaveform();
-
     if(conversionADCCompleted){
 
     	// Potentiometer Deadband
@@ -324,32 +335,24 @@ int main(void)
     	conversionADCCompleted = 0;
     }
 
+    selectedWaveform = getUserWaveform();
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
     	osc1.waveform = selectedWaveform;
         HAL_UART_Transmit(&huart4, (uint8_t*) waveformsAvailable[osc1.waveform], strlen(waveformsAvailable[osc1.waveform]), 10);
-
-		 if(osc1.waveform == SINUS){
-			 osc1.activeLookupTable = sineLookupTable;
-		 }
-		else if(osc1.waveform == TRIANGLE){
-			osc1.activeLookupTable = triangleLookupTable;
-		}
-		else if(osc1.waveform == SAWTOOTH){
-			osc1.activeLookupTable = sawtoothLookupTable;
-		}
-		else{
-			osc1.activeLookupTable = squareLookupTable;
-		 }
+        osc1.activeLookupTable = defineActiveLookupTableWaveform(selectedWaveform);
     }
 
    if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
 	osc1.frequency = 523.25;
 	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
    }
+
    else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
 	osc1.frequency = 783.99;
 	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
    }
+
+
   }
     /* USER CODE END WHILE */
 
