@@ -198,6 +198,17 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	conversionADCCompleted = 1;
 }
 
+float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
+	float linearScaledDeadbandPotentiometer;
+
+	if (potentiometerRawValue < potentiometerDeadband) {
+		linearScaledDeadbandPotentiometer = 0.0;
+	} else {
+		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0 - potentiometerDeadband);
+	}
+	return linearScaledDeadbandPotentiometer;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -213,7 +224,7 @@ int main(void)
   // this variable is used to make sure we have a real "zeroed-volume" when potentiometer is at its physical zero value (which is never zero actually)
   // --> see "deadband"
   float linearScaledDeadbandPotentiometer;
-  const float potentiometerDeadband = 50.0;
+  const float potentiometerDeadband = 25.0;
   const char* waveformsAvailable[] = {
       "NONE\r\n",
       "SINUS\r\n",
@@ -288,12 +299,7 @@ int main(void)
     if(conversionADCCompleted){
 
     	// Potentiometer Deadband
-    	if(potentiometerRawValue < potentiometerDeadband){
-    		linearScaledDeadbandPotentiometer = 0.0;
-    	}
-    	else{
-    		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0 - potentiometerDeadband);
-    	}
+		linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer(potentiometerRawValue, potentiometerDeadband);
 
     	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
     	linearScaledDeadbandPotentiometer = linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
