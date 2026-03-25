@@ -214,6 +214,17 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 	return linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
 }
 
+float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) {
+	// Filtering ADC inputs with Exponential Moving Average filter
+	 LowPassFilter_EMA lowPassFilterEMA;
+	// init low pass filter to get clean potentiometer ADC inputs
+	lowPassFilterEMA.alpha = 0.1;
+	lowPassFilterEMA.output = 0.0;
+
+	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+	return lowPassFilterEMA.output;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -225,7 +236,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
   Waveform_t selectedWaveform;
   uint16_t potentiometerRawValue;
-  LowPassFilter_EMA lowPassFilterEMA;
   // this variable is used to make sure we have a real "zeroed-volume" when potentiometer is at its physical zero value (which is never zero actually)
   // --> see "deadband"
   float linearScaledDeadbandPotentiometer;
@@ -290,8 +300,7 @@ int main(void)
   // ADC in DMA mode
   HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &potentiometerRawValue, 1);
 
-  // init low pass filter to get clean potentiometer ADC inputs
-  lowPassFilterEMA.alpha = 0.1;
+
 
 
   /* USER CODE END 2 */
@@ -309,11 +318,9 @@ int main(void)
     	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
 		linearScaledDeadbandPotentiometer = approximateExpFunction(linearScaledDeadbandPotentiometer);
 
-    	// Filtering ADC inputs with Exponential Moving Average filter
-    	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+    	// Final output with Filtering ADC inputs with Exponential Moving Average filter
+    	osc1.volume = lowPassFilterPotentiometerInputs(linearScaledDeadbandPotentiometer);
 
-    	// Final output
-    	osc1.volume = lowPassFilterEMA.output;
     	conversionADCCompleted = 0;
     }
 
