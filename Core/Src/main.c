@@ -194,8 +194,19 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 	}
 }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	conversionADCCompleted = 1;
+int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
+	 if(selectedWaveform == SINUS){
+		 return sineLookupTable;
+	 }
+	else if(selectedWaveform == TRIANGLE){
+		return triangleLookupTable;
+	}
+	else if(selectedWaveform == SAWTOOTH){
+		return sawtoothLookupTable;
+	}
+	else{
+		return squareLookupTable;
+	 }
 }
 
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
@@ -216,28 +227,16 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 
 float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) {
 	// Filtering ADC inputs with Exponential Moving Average filter
-	 LowPassFilter_EMA lowPassFilterEMA;
+	static LowPassFilter_EMA lowPassFilterEMA;
 	// init low pass filter to get clean potentiometer ADC inputs
 	lowPassFilterEMA.alpha = 0.1;
-	lowPassFilterEMA.output = 0.0;
 
 	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
 	return lowPassFilterEMA.output;
 }
 
-int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
-	 if(selectedWaveform == SINUS){
-		 return sineLookupTable;
-	 }
-	else if(selectedWaveform == TRIANGLE){
-		return triangleLookupTable;
-	}
-	else if(selectedWaveform == SAWTOOTH){
-		return sawtoothLookupTable;
-	}
-	else{
-		return squareLookupTable;
-	 }
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	conversionADCCompleted = 1;
 }
 
 
