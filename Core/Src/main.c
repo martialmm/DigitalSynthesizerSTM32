@@ -111,30 +111,28 @@ uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2
 }
 
 void feedDMAAudioBuffer(int16_t *buffer, uint16_t num_frames){
+	float output;
 	const float antipopFactor = 0.001;
-	//volatile ?
 	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) || HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
 
 	for(uint16_t i = 0; i < num_frames; i++){
 		if(noteButtonPressed){
-			if(osc1.volume <= 1.0){
-				osc1.volume += antipopFactor;
-			}
-			else{
-				osc1.volume = 1.0;
-			}
+			osc1.enveloppe += antipopFactor;
+			if(osc1.enveloppe > 1.0) osc1.enveloppe = 1.0;
 		}
 		else{
-			if(osc1.volume > 0.0){
-				osc1.volume -= antipopFactor;
-			}
-			else{
-				osc1.volume = 0.0;
-			}
+			osc1.enveloppe -= antipopFactor;
+			if (osc1.enveloppe < 0.0) osc1.enveloppe = 0.0;
 		}
 
-		buffer[2*i] = osc1.activeLookupTable[osc1.phase >> FP_SHIFT_AMOUNT] * osc1.volume;
-		buffer[2*i+1] = osc1.activeLookupTable[osc1.phase >> FP_SHIFT_AMOUNT] * osc1.volume;
+		output = osc1.activeLookupTable[osc1.phase >> FP_SHIFT_AMOUNT] * osc1.enveloppe * osc1.volume;
+
+		// securite pour pas perde un ou deux tympans
+		if (output > 32767.0f) output = 32767.0f;
+		if (output < -32768.0f) output = -32768.0f;
+
+		buffer[2*i] = output;
+		buffer[2*i+1] = output;
 
 		osc1.phase += osc1.phaseIncrement;
 	}
@@ -212,6 +210,10 @@ int main(void)
   Waveform_t selectedWaveform;
   uint16_t potentiometerRawValue;
   LowPassFilter_EMA lowPassFilterEMA;
+  // this variable is used to make sure we have a real "zeroed-volume" when potentiometer is at its physical zero value (which is never zero actually)
+  // --> see "deadband"
+  float linearScaledDeadbandPotentiometer;
+  const float potentiometerDeadband = 50.0;
   const char* waveformsAvailable[] = {
       "NONE\r\n",
       "SINUS\r\n",
@@ -259,6 +261,7 @@ int main(void)
   // init oscillators
   osc1.activeLookupTable = sineLookupTable;
   osc1.detune = 0;
+  osc1.enveloppe = 0.0f;
   osc1.frequency = 0.0f;
   osc1.phase = 0;
   osc1.phaseIncrement = 0;
@@ -283,13 +286,25 @@ int main(void)
     selectedWaveform = getUserWaveform();
 
     if(conversionADCCompleted){
-    	lowPassFilterEMA.output = lowPassFilterEMA.alpha * (float)potentiometerRawValue + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+
+    	// Potentiometer Deadband
+    	if(potentiometerRawValue < potentiometerDeadband){
+    		linearScaledDeadbandPotentiometer = 0.0;
+    	}
+    	else{
+    		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0 - potentiometerDeadband);
+    	}
+
+    	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
+    	linearScaledDeadbandPotentiometer = linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
+
+    	// Filtering ADC inputs with Exponential Moving Average filter
+    	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+
+    	// Final output
+    	osc1.volume = lowPassFilterEMA.output;
     	conversionADCCompleted = 0;
     }
-
-
-    printf("%f\r\n", lowPassFilterEMA.output);
-    //HAL_Delay(100);
 
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
     	osc1.waveform = selectedWaveform;
@@ -572,19 +587,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PD13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : Audio_RST_Pin */
-  GPIO_InitStruct.Pin = Audio_RST_Pin;
+  /*Configure GPIO pins : PD13 Audio_RST_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_13|Audio_RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(Audio_RST_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
