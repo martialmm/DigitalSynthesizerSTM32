@@ -39,9 +39,9 @@ float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float
 	float linearScaledDeadbandPotentiometer;
 
 	if (potentiometerRawValue < potentiometerDeadband) {
-		linearScaledDeadbandPotentiometer = 0.0;
+		linearScaledDeadbandPotentiometer = 0.0f;
 	} else {
-		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0 - potentiometerDeadband);
+		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0f - potentiometerDeadband);
 	}
 	return linearScaledDeadbandPotentiometer;
 }
@@ -55,7 +55,7 @@ float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) 
 	// Filtering ADC inputs with Exponential Moving Average filter
 	static struct LowPassFilter_EMA lowPassFilterEMA;
 	// init low pass filter to get clean potentiometer ADC inputs
-	lowPassFilterEMA.alpha = 0.1;
+	lowPassFilterEMA.alpha = 0.1f;
 
 	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
 	return lowPassFilterEMA.output;
@@ -63,7 +63,7 @@ float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) 
 
 float processVolumePotentiometer(uint16_t potentiometerRawValue){
 	float linearScaledDeadbandPotentiometer;
-	const float potentiometerDeadband = 25.0;
+	const float potentiometerDeadband = 25.0f;
 
 	// Potentiometer Deadband
 	linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer(potentiometerRawValue, potentiometerDeadband);

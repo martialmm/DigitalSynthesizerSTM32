@@ -9,7 +9,7 @@
 #include <math.h>
 
 #define WAVE_AMPLITUDE 16000
-#define PIPI 6.2831853
+#define PIPI 6.2831853f
 
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
 static int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
@@ -23,11 +23,11 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
 }
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE / 2], NUMBER_OF_FRAMES_PER_HALF);
+	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
 }
 
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
-	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0); // 4294967296.0 = 2^32
+	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
 }
 
 int16_t* defineActiveLookupTableWaveform(enum Waveform_t selectedWaveform){
@@ -128,17 +128,17 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 
 void feedDMAAudioBuffer(struct Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
-	const float antipopFactor = 0.001;
+	const float antipopFactor = 0.001f;
 	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) || HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
 
 	for(uint16_t i = 0; i < num_frames; i++){
 		if(noteButtonPressed){
 			oscillator->enveloppe += antipopFactor;
-			if(oscillator->enveloppe > 1.0) oscillator->enveloppe = 1.0;
+			if(oscillator->enveloppe > 1.0f) oscillator->enveloppe = 1.0f;
 		}
 		else{
 			oscillator->enveloppe -= antipopFactor;
-			if (oscillator->enveloppe < 0.0) oscillator->enveloppe = 0.0;
+			if (oscillator->enveloppe < 0.0f) oscillator->enveloppe = 0.0f;
 		}
 
 		output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->enveloppe * oscillator->volume;

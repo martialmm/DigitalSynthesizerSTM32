@@ -124,8 +124,6 @@ int main(void)
   // ADC
   startADCPotentiometer(&hadc1);
 
-  // startADCPotentiometer(&hacd1, );
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -143,16 +141,14 @@ int main(void)
 
    // temp for tests
    if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
-	osc1.frequency = 523.25;
+	osc1.frequency = 523.25f;
 	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
    }
 
    else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
-	osc1.frequency = 783.99;
+	osc1.frequency = 783.99f;
 	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
    }
-
-
   }
     /* USER CODE END WHILE */
 
