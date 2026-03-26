@@ -36,29 +36,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-typedef enum {
-    NONE,
-    SINUS,
-    TRIANGLE,
-    SAWTOOTH,
-    SQUARE
-} Waveform_t;
 
-typedef struct {
-    int16_t* activeLookupTable;
-    int8_t detune;
-    float enveloppe;
-    float frequency;
-    uint32_t phase;
-    uint32_t phaseIncrement;
-    float volume;
-    Waveform_t waveform;
-} Oscillator_t;
-
-typedef struct{
-	float alpha; // [0..1]: 0 ==> max filtering / 1 ==> no filtering
-	float output;
-} LowPassFilter_EMA;
 
 /* USER CODE END ET */
 

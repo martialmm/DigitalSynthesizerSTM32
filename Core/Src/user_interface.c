@@ -1,0 +1,84 @@
+/*
+ * user_interface.c
+ *
+ *  Created on: Mar 26, 2026
+ *      Author: mars
+ */
+
+#include "user_interface.h"
+#include "main.h"
+
+uint32_t potentiometerRawValue;
+volatile uint8_t conversionADCCompleted = 0;
+
+Waveform_t getUserWaveform(void)
+{
+    if (HAL_GPIO_ReadPin(bsinus_GPIO_Port, bsinus_Pin))
+    {
+    	return SINUS;
+    }
+    else if (HAL_GPIO_ReadPin(btriangle_GPIO_Port, btriangle_Pin))
+    {
+    	return TRIANGLE;
+    }
+    else if (HAL_GPIO_ReadPin(bsaw_GPIO_Port, bsaw_Pin))
+    {
+    	return SAWTOOTH;
+    }
+    else if (HAL_GPIO_ReadPin(bsquare_GPIO_Port, bsquare_Pin))
+    {
+    	return SQUARE;
+    }
+    else
+    {
+    	return NONE;
+    }
+}
+
+float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
+	float linearScaledDeadbandPotentiometer;
+
+	if (potentiometerRawValue < potentiometerDeadband) {
+		linearScaledDeadbandPotentiometer = 0.0;
+	} else {
+		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0 - potentiometerDeadband);
+	}
+	return linearScaledDeadbandPotentiometer;
+}
+
+float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
+	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
+	return linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
+}
+
+float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) {
+	// Filtering ADC inputs with Exponential Moving Average filter
+	static LowPassFilter_EMA lowPassFilterEMA;
+	// init low pass filter to get clean potentiometer ADC inputs
+	lowPassFilterEMA.alpha = 0.1;
+
+	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+	return lowPassFilterEMA.output;
+}
+
+float processVolumePotentiometer(uint16_t potentiometerRawValue){
+	float linearScaledDeadbandPotentiometer;
+	const float potentiometerDeadband = 25.0;
+
+	// Potentiometer Deadband
+	linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer(potentiometerRawValue, potentiometerDeadband);
+
+	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
+	linearScaledDeadbandPotentiometer = approximateExpFunction(linearScaledDeadbandPotentiometer);
+
+	return lowPassFilterPotentiometerInputs(linearScaledDeadbandPotentiometer);
+}
+
+void startADCPotentiometer(ADC_HandleTypeDef *hadc) {
+    HAL_ADC_Start_DMA(hadc, &potentiometerRawValue, 1);
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	conversionADCCompleted = 1;
+}
+

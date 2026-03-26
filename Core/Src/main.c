@@ -13,8 +13,9 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
-#include <math.h>
 #include "MY_CS43L22.h"
+#include "oscillator.h"
+#include "user_interface.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -24,13 +25,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NUMBER_OF_FRAMES_PER_HALF 32  // 32 samples (left+right) for each call
-#define TOTAL_BUFFER_SIZE (NUMBER_OF_FRAMES_PER_HALF * 2 * 2) // 32 frames * 2 (L/R) * 2 (halves) = 128 values
-#define WAVE_AMPLITUDE 16000
-#define PIPI 6.2831853
-#define LUT_BITS 12
-#define SAMPLE_NUMBER_LUT (1 << LUT_BITS) // can hear a small harmonic distortion for value < 4096 => maybe something to improve
-#define FP_SHIFT_AMOUNT (32 - LUT_BITS)
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -50,13 +45,6 @@ DMA_HandleTypeDef hdma_spi3_tx;
 UART_HandleTypeDef huart4;
 
 /* USER CODE BEGIN PV */
-static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
-static int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
-static int16_t triangleLookupTable[SAMPLE_NUMBER_LUT];
-static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
-static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
-Oscillator_t osc1;
-volatile uint8_t conversionADCCompleted = 0;
 
 /* USER CODE END PV */
 
@@ -82,164 +70,6 @@ int __io_putchar(int ch)
 	return ch;
 }
 
-Waveform_t getUserWaveform(void)
-{
-    if (HAL_GPIO_ReadPin(bsinus_GPIO_Port, bsinus_Pin))
-    {
-    	return SINUS;
-    }
-    else if (HAL_GPIO_ReadPin(btriangle_GPIO_Port, btriangle_Pin))
-    {
-    	return TRIANGLE;
-    }
-    else if (HAL_GPIO_ReadPin(bsaw_GPIO_Port, bsaw_Pin))
-    {
-    	return SAWTOOTH;
-    }
-    else if (HAL_GPIO_ReadPin(bsquare_GPIO_Port, bsquare_Pin))
-    {
-    	return SQUARE;
-    }
-    else
-    {
-    	return NONE;
-    }
-}
-
-uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
-	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0); // 4294967296.0 = 2^32
-}
-
-void feedDMAAudioBuffer(int16_t *buffer, uint16_t num_frames){
-	float output;
-	const float antipopFactor = 0.001;
-	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) || HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
-
-	for(uint16_t i = 0; i < num_frames; i++){
-		if(noteButtonPressed){
-			osc1.enveloppe += antipopFactor;
-			if(osc1.enveloppe > 1.0) osc1.enveloppe = 1.0;
-		}
-		else{
-			osc1.enveloppe -= antipopFactor;
-			if (osc1.enveloppe < 0.0) osc1.enveloppe = 0.0;
-		}
-
-		output = osc1.activeLookupTable[osc1.phase >> FP_SHIFT_AMOUNT] * osc1.enveloppe * osc1.volume;
-
-		// securite pour pas perde un ou deux tympans
-		if (output > 32767.0f) output = 32767.0f;
-		if (output < -32768.0f) output = -32768.0f;
-
-		buffer[2*i] = output;
-		buffer[2*i+1] = output;
-
-		osc1.phase += osc1.phaseIncrement;
-	}
-}
-
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
-}
-
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&dmaAudioBuffer[TOTAL_BUFFER_SIZE / 2], NUMBER_OF_FRAMES_PER_HALF);
-}
-
-void feedSinewaveTable(int16_t* sinusLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	for (uint16_t i = 0; i < tableSize; i++) {
-		sinusLookupTable[i] = (int16_t) (waveAmplitude * sin(i * PIPI / tableSize));
-	}
-}
-
-void feedTriangleTable(int16_t* triangleLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	//we slice one period of the triangle in three equations y = ax + b
-	// y --> tab[i]
-	// x --> i
-	// b --> wave_amplitude
-	// in each calculation, I have to do the multiplication first and then the division.
-	// if I do the division first, the decimal part will be lost early (because we use integers) and the error will "snowball" with the multiplication.
-	// This will lead to have bad values at the extremes points (or not really precise as we want).
-	// Bit shifting is used to avoid some divisions.
-
-	const uint16_t quarterOfTheWavePeriod = tableSize >> 2;
-	const uint16_t halfOfTheWavePeriod = tableSize >> 1;
-	const uint16_t threeQuartersOfTheWavePeriod = quarterOfTheWavePeriod + halfOfTheWavePeriod;
-
-	for (uint16_t i = 0; i < tableSize; i++) {
-		if (i < quarterOfTheWavePeriod) {
-			triangleLookupTable[i] = (waveAmplitude * i) / quarterOfTheWavePeriod;
-		} else if (i < threeQuartersOfTheWavePeriod) {
-			triangleLookupTable[i] = - waveAmplitude * (i - quarterOfTheWavePeriod) / quarterOfTheWavePeriod + waveAmplitude;
-		} else {
-			triangleLookupTable[i] = waveAmplitude * (i - threeQuartersOfTheWavePeriod) / quarterOfTheWavePeriod - waveAmplitude;
-		}
-	}
-}
-
-void feedSawtoothTable(int16_t* sawtoothLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	for (uint16_t i = 0; i < tableSize; i++) {
-		sawtoothLookupTable[i] = (2 * waveAmplitude * i) / tableSize - waveAmplitude;
-	}
-}
-
-void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	const uint16_t halfOfTheWave = tableSize >> 1;
-	for (uint16_t i = 0; i < tableSize; i++) {
-		if (i < halfOfTheWave) {
-			squareLookupTable[i] = waveAmplitude;
-		} else {
-			squareLookupTable[i] = -waveAmplitude;
-		}
-	}
-}
-
-int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
-	 if(selectedWaveform == SINUS){
-		 return sineLookupTable;
-	 }
-	else if(selectedWaveform == TRIANGLE){
-		return triangleLookupTable;
-	}
-	else if(selectedWaveform == SAWTOOTH){
-		return sawtoothLookupTable;
-	}
-	else{
-		return squareLookupTable;
-	 }
-}
-
-float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
-	float linearScaledDeadbandPotentiometer;
-
-	if (potentiometerRawValue < potentiometerDeadband) {
-		linearScaledDeadbandPotentiometer = 0.0;
-	} else {
-		linearScaledDeadbandPotentiometer = (potentiometerRawValue - potentiometerDeadband) / (4095.0 - potentiometerDeadband);
-	}
-	return linearScaledDeadbandPotentiometer;
-}
-
-float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
-	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
-	return linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
-}
-
-float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) {
-	// Filtering ADC inputs with Exponential Moving Average filter
-	static LowPassFilter_EMA lowPassFilterEMA;
-	// init low pass filter to get clean potentiometer ADC inputs
-	lowPassFilterEMA.alpha = 0.1;
-
-	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
-	return lowPassFilterEMA.output;
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	conversionADCCompleted = 1;
-}
-
-
 /* USER CODE END 0 */
 
 /**
@@ -249,19 +79,10 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  Waveform_t selectedWaveform;
-  uint16_t potentiometerRawValue;
+
   // this variable is used to make sure we have a real "zeroed-volume" when potentiometer is at its physical zero value (which is never zero actually)
   // --> see "deadband"
-  float linearScaledDeadbandPotentiometer;
-  const float potentiometerDeadband = 25.0;
-  const char* waveformsAvailable[] = {
-      "NONE\r\n",
-      "SINUS\r\n",
-      "TRIANGLE\r\n",
-      "SAW\r\n",
-      "SQUARE\r\n"
-  };
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -293,27 +114,17 @@ int main(void)
   CS43_Enable_RightLeft(CS43_RIGHT_LEFT);
   CS43_Start();
 
-  // create lookup table for the 4 waveforms
-  feedSinewaveTable(sineLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
-  feedTriangleTable(triangleLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
-  feedSawtoothTable(sawtoothLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
-  feedSquareTable(squareLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
+  // Init phase
+  initializeSynthesizer();
+  initializeOscillator(&osc1);
 
-  // init oscillators
-  osc1.activeLookupTable = sineLookupTable;
-  osc1.detune = 0;
-  osc1.enveloppe = 0.0f;
-  osc1.frequency = 0.0f;
-  osc1.phase = 0;
-  osc1.phaseIncrement = 0;
-  osc1.volume = 0.0f;
-  osc1.waveform = SINUS;
+  // I2S
+  startI2SOscillator(&hi2s3);
 
-  // i2s
-  HAL_I2S_Transmit_DMA(&hi2s3, (uint16_t*) &dmaAudioBuffer, TOTAL_BUFFER_SIZE);
+  // ADC
+  startADCPotentiometer(&hadc1);
 
-  // ADC in DMA mode
-  HAL_ADC_Start_DMA(&hadc1, (uint32_t*) &potentiometerRawValue, 1);
+  // startADCPotentiometer(&hacd1, );
 
   /* USER CODE END 2 */
 
@@ -321,26 +132,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while(1){
     if(conversionADCCompleted){
-
-    	// Potentiometer Deadband
-		linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer(potentiometerRawValue, potentiometerDeadband);
-
-    	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
-		linearScaledDeadbandPotentiometer = approximateExpFunction(linearScaledDeadbandPotentiometer);
-
-    	// Final output with Filtering ADC inputs with Exponential Moving Average filter
-    	osc1.volume = lowPassFilterPotentiometerInputs(linearScaledDeadbandPotentiometer);
-
+    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
     	conversionADCCompleted = 0;
     }
 
-    selectedWaveform = getUserWaveform();
+    Waveform_t selectedWaveform = getUserWaveform();
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
-    	osc1.waveform = selectedWaveform;
-        HAL_UART_Transmit(&huart4, (uint8_t*) waveformsAvailable[osc1.waveform], strlen(waveformsAvailable[osc1.waveform]), 10);
-        osc1.activeLookupTable = defineActiveLookupTableWaveform(selectedWaveform);
+    	setOscillatorWaveform(&osc1, selectedWaveform);
     }
 
+   // temp for tests
    if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
 	osc1.frequency = 523.25;
 	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
