@@ -136,7 +136,7 @@ int main(void)
     	conversionADCCompleted = 0;
     }
 
-    Waveform_t selectedWaveform = getUserWaveform();
+    enum Waveform_t selectedWaveform = getUserWaveform();
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
     	setOscillatorWaveform(&osc1, selectedWaveform);
     }
