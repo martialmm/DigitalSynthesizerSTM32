@@ -13,9 +13,9 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include <stdio.h>
-#include "MY_CS43L22.h"
 #include "oscillator.h"
 #include "user_interface.h"
+#include "cs43l22.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -25,7 +25,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define CS43_Reset_Pin GPIO_PIN_4
+#define CS43_Reset_GPIO_Port GPIOD
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -42,33 +43,30 @@ I2C_HandleTypeDef hi2c1;
 I2S_HandleTypeDef hi2s3;
 DMA_HandleTypeDef hdma_spi3_tx;
 
-UART_HandleTypeDef huart4;
-
 /* USER CODE BEGIN PV */
-
+CS43L22_HandleTypeDef hcs43;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_UART4_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2S3_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void cs43_config();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
 // used for debugging to print values on pc console with uart
-int __io_putchar(int ch)
-{
-	HAL_UART_Transmit(&huart4, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
-	return ch;
-}
+//int __io_putchar(int ch)
+//{
+//	HAL_UART_Transmit(&huart4, (uint8_t*) &ch, 1, HAL_MAX_DELAY);
+//	return ch;
+//}
 
 /* USER CODE END 0 */
 
@@ -91,6 +89,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
+  cs43_config();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -102,17 +101,20 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_UART4_Init();
   MX_I2C1_Init();
   MX_I2S3_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   // Configure CS43 audio chip
-  CS43_Init(hi2c1, MODE_I2S);
-  CS43_SetVolume(1);
-  CS43_Enable_RightLeft(CS43_RIGHT_LEFT);
-  CS43_Start();
+//  CS43_Init(hi2c1, MODE_I2S);
+//  CS43_SetVolume(1);
+//  CS43_Enable_RightLeft(CS43_RIGHT_LEFT);
+//  CS43_Start();
+
+  CS43L22_Initialization(&hcs43);
+  unmuteHeadphoneOutput(&hcs43);
+  setHeadphoneVolume(&hcs43, 100);
 
   // Init phase
   initializeSynthesizer();
@@ -323,39 +325,6 @@ static void MX_I2S3_Init(void)
 }
 
 /**
-  * @brief UART4 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_UART4_Init(void)
-{
-
-  /* USER CODE BEGIN UART4_Init 0 */
-
-  /* USER CODE END UART4_Init 0 */
-
-  /* USER CODE BEGIN UART4_Init 1 */
-
-  /* USER CODE END UART4_Init 1 */
-  huart4.Instance = UART4;
-  huart4.Init.BaudRate = 9600;
-  huart4.Init.WordLength = UART_WORDLENGTH_8B;
-  huart4.Init.StopBits = UART_STOPBITS_1;
-  huart4.Init.Parity = UART_PARITY_NONE;
-  huart4.Init.Mode = UART_MODE_TX_RX;
-  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN UART4_Init 2 */
-
-  /* USER CODE END UART4_Init 2 */
-
-}
-
-/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -396,6 +365,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13|Audio_RST_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin : onboarUserButton_Pin */
+  GPIO_InitStruct.Pin = onboarUserButton_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(onboarUserButton_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pins : bLowerOctave_Pin bUpperOctave_Pin bsquare_Pin bsinus_Pin
                            btriangle_Pin bsaw_Pin */
   GPIO_InitStruct.Pin = bLowerOctave_Pin|bUpperOctave_Pin|bsquare_Pin|bsinus_Pin
@@ -416,9 +391,13 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+static void cs43_config()
 {
-
+	hcs43.i2c = &hi2c1;
+	hcs43.i2s = &hi2s3;
+	hcs43.deviceAddress = 0x94;
+	hcs43.Init.resetPort = CS43_Reset_GPIO_Port;
+	hcs43.Init.resetPin = CS43_Reset_Pin;
 }
 /* USER CODE END 4 */
 

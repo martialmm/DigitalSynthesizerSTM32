@@ -129,7 +129,9 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 void feedDMAAudioBuffer(struct Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
 	const float antipopFactor = 0.001f;
-	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) || HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
+	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) ||
+								HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin) ||
+								HAL_GPIO_ReadPin(onboarUserButton_GPIO_Port, onboarUserButton_Pin);
 
 	for(uint16_t i = 0; i < num_frames; i++){
 		if(noteButtonPressed){
