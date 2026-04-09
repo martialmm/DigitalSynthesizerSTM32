@@ -107,14 +107,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   // Configure CS43 audio chip
-//  CS43_Init(hi2c1, MODE_I2S);
-//  CS43_SetVolume(1);
-//  CS43_Enable_RightLeft(CS43_RIGHT_LEFT);
-//  CS43_Start();
 
   CS43L22_Initialization(&hcs43);
   unmuteHeadphoneOutput(&hcs43);
-  setHeadphoneVolume(&hcs43, 100);
+  setHeadphoneVolume(&hcs43, 50);
 
   // Init phase
   initializeSynthesizer();

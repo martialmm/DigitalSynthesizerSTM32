@@ -31,7 +31,7 @@ enum Waveform_t getUserWaveform(void)
     }
     else
     {
-    	return NONE;
+    	return SINUS;
     }
 }
 
