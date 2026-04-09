@@ -58,8 +58,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define onboarUserButton_Pin GPIO_PIN_0
-#define onboarUserButton_GPIO_Port GPIOA
 #define bLowerOctave_Pin GPIO_PIN_11
 #define bLowerOctave_GPIO_Port GPIOD
 #define bUpperOctave_Pin GPIO_PIN_12

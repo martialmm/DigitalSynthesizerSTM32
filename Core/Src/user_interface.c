@@ -11,7 +11,7 @@
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
 
-enum Waveform_t getUserWaveform(void)
+Waveform_t getUserWaveform(void)
 {
     if (HAL_GPIO_ReadPin(bsinus_GPIO_Port, bsinus_Pin))
     {

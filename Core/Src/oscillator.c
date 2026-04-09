@@ -16,7 +16,7 @@ static int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t triangleLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
-struct Oscillator_t osc1;
+Oscillator_t osc1;
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
 	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
@@ -30,7 +30,7 @@ uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2
 	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
 }
 
-int16_t* defineActiveLookupTableWaveform(enum Waveform_t selectedWaveform){
+int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
 	 if(selectedWaveform == SINUS){
 		 return sineLookupTable;
 	 }
@@ -60,7 +60,7 @@ void initializeSynthesizer(){
 	createAllLookupTables();
 }
 
-void initializeOscillator(struct Oscillator_t* oscillator){
+void initializeOscillator(Oscillator_t* oscillator){
 	oscillator->activeLookupTable = sineLookupTable;
 	oscillator->detune = 0;
 	oscillator->enveloppe = 0.0f;
@@ -71,7 +71,7 @@ void initializeOscillator(struct Oscillator_t* oscillator){
 	oscillator->waveform = SINUS;
 }
 
-void setOscillatorWaveform(struct Oscillator_t *osc, enum Waveform_t waveform) {
+void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform) {
     if (waveform != NONE && waveform != osc->waveform) {
         osc->waveform = waveform;
         osc->activeLookupTable = defineActiveLookupTableWaveform(waveform);
@@ -126,12 +126,11 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 	}
 }
 
-void feedDMAAudioBuffer(struct Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
+void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
 	const float antipopFactor = 0.001f;
 	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) ||
-								HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin) ||
-								HAL_GPIO_ReadPin(onboarUserButton_GPIO_Port, onboarUserButton_Pin);
+								HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
 
 	for(uint16_t i = 0; i < num_frames; i++){
 		if(noteButtonPressed){

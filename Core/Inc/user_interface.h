@@ -17,7 +17,7 @@ struct LowPassFilter_EMA{
 	float output;
 };
 
-enum Waveform_t getUserWaveform(void);
+Waveform_t getUserWaveform(void);
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);
 float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer);

@@ -17,15 +17,15 @@
 #define SAMPLE_NUMBER_LUT (1 << LUT_BITS) // can hear a small harmonic distortion for value < 4096 => maybe something to improve
 #define FP_SHIFT_AMOUNT (32 - LUT_BITS)
 
-enum Waveform_t{
+typedef enum{
     NONE,
     SINUS,
     TRIANGLE,
     SAWTOOTH,
     SQUARE
-};
+}Waveform_t;
 
-struct Oscillator_t{
+typedef struct {
     float enveloppe;
     float frequency;
     float volume;
@@ -33,23 +33,23 @@ struct Oscillator_t{
     uint32_t phaseIncrement;
     int16_t* activeLookupTable;
     int8_t detune;
-    enum Waveform_t waveform;
-};
+    Waveform_t waveform;
+}Oscillator_t;
 
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s);
-int16_t* defineActiveLookupTableWaveform(enum Waveform_t selectedWaveform);
+int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 void startI2SOscillator(I2S_HandleTypeDef* hi2s);
 void createAllLookupTables();
 void initializeSynthesizer();
-void initializeOscillator(struct Oscillator_t* oscillator);
-void setOscillatorWaveform(struct Oscillator_t *osc, enum Waveform_t waveform);
+void initializeOscillator(Oscillator_t* oscillator);
+void setOscillatorWaveform(Oscillator_t *osc,Waveform_t waveform);
 void feedSinewaveTable(int16_t* sinusLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedTriangleTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedSawtoothTable(int16_t* sawtoothLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude);
-void feedDMAAudioBuffer(struct Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames);
+void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames);
 
-extern struct Oscillator_t osc1;
+extern Oscillator_t osc1;
 
 #endif /* INC_OSCILLATOR_H_ */

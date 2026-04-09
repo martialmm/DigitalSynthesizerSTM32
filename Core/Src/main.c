@@ -132,7 +132,7 @@ int main(void)
     	conversionADCCompleted = 0;
     }
 
-    enum Waveform_t selectedWaveform = getUserWaveform();
+    Waveform_t selectedWaveform = getUserWaveform();
     if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
     	setOscillatorWaveform(&osc1, selectedWaveform);
     }
@@ -360,12 +360,6 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13|Audio_RST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : onboarUserButton_Pin */
-  GPIO_InitStruct.Pin = onboarUserButton_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(onboarUserButton_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : bLowerOctave_Pin bUpperOctave_Pin bsquare_Pin bsinus_Pin
                            btriangle_Pin bsaw_Pin */
