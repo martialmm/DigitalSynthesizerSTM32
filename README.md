@@ -1,6 +1,6 @@
 # DIGITAL POLYPHONIC SYNTHESIZER
 
-This project aims to develop a basic 8-voice polyphonic digital synthesizer. It features 2 oscillators, a filter section, effects, and standard synthesizer controls.
+This project aims to develop a basic 8-voices polyphonic digital synthesizer. It features 2 oscillators, a filter section, effects, and standard synthesizer controls.
 
 The device is designed as a desktop module (no built-in keyboard) and is controlled via an external USB MIDI keyboard.
 
@@ -27,7 +27,7 @@ The device is designed as a desktop module (no built-in keyboard) and is control
 - Resonance.
 - Enveloppe amount.
 
-#### Eveloppe ADSR
+#### Enveloppe ADSR
 - Attack.
 - Decay.
 - Sustain.
@@ -51,8 +51,8 @@ The device is designed as a desktop module (no built-in keyboard) and is control
 
 ### Connection
 #### Input
-MIDI In via DIN 5 pins.
+MIDI In via DIN 5 pins (Option with Midi USB, TBD).
 
 #### Output
 - Stereo headphone output via mini jack 3.5mm.
-- (+ Line output via 3.5mm or 6.3mm (TBD)).
+- Line output via 3.5mm or 6.3mm (TBD).
