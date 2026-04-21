@@ -32,18 +32,17 @@ void synthesizer(){
 	startADCPotentiometer(ch_hadc1);
 
 	while(1){
-	//    if(conversionADCCompleted){
-	//    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
-	//    	conversionADCCompleted = 0;
-	//    }
+	    scanUserInputs();
 
-		osc1.volume = 50.0f; //processVolumePotentiometer(potentiometerRawValue);
+	    if(conversionADCCompleted){
+	    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
+	    	conversionADCCompleted = 0;
+	    }
 
-		//Waveform_t selectedWaveform = getUserWaveform();
-	//    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
-	//    	setOscillatorWaveform(&osc1, selectedWaveform);
-	//    }
-		setOscillatorWaveform(&osc1, SINUS);
+		Waveform_t selectedWaveform = getUserWaveform();
+	    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
+	    	setOscillatorWaveform(&osc1, selectedWaveform);
+	    }
 
 	   // temp for tests
 	   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){

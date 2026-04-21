@@ -8,6 +8,7 @@
 #include "oscillator.h"
 #include <math.h>
 #include "main.h"
+#include "user_interface.h"
 
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f
@@ -130,8 +131,7 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
 	const float antipopFactor = 0.001f;
-	uint8_t noteButtonPressed = HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin) ||
-								HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin);
+	uint8_t noteButtonPressed = (userInputs.buttonsState & BTN_LOWER_OCTAVE) || (userInputs.buttonsState & BTN_UPPER_OCTAVE);
 
 	for(uint16_t i = 0; i < num_frames; i++){
 		if(noteButtonPressed){

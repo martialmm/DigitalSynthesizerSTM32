@@ -36,6 +36,15 @@ Waveform_t getUserWaveform(void)
 	return SINUS;
 }
 
+void scanUserInputs(){
+	if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bUpperOctave_Pin)){
+		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
+	}
+	if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
+		userInputs.buttonsState |= BTN_UPPER_OCTAVE;
+	}
+}
+
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
 	float linearScaledDeadbandPotentiometer;
 
