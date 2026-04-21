@@ -130,15 +130,18 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while(1){
-    if(conversionADCCompleted){
-    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
-    	conversionADCCompleted = 0;
-    }
+//    if(conversionADCCompleted){
+//    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
+//    	conversionADCCompleted = 0;
+//    }
 
-    Waveform_t selectedWaveform = getUserWaveform();
-    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
-    	setOscillatorWaveform(&osc1, selectedWaveform);
-    }
+    osc1.volume = 50.0f; //processVolumePotentiometer(potentiometerRawValue);
+
+    //Waveform_t selectedWaveform = getUserWaveform();
+//    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
+//    	setOscillatorWaveform(&osc1, selectedWaveform);
+//    }
+    setOscillatorWaveform(&osc1, SINUS);
 
    // temp for tests
    if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
@@ -427,10 +430,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : bLowerOctave_Pin bUpperOctave_Pin bsquare_Pin bsinus_Pin
-                           btriangle_Pin bsaw_Pin */
-  GPIO_InitStruct.Pin = bLowerOctave_Pin|bUpperOctave_Pin|bsquare_Pin|bsinus_Pin
-                          |btriangle_Pin|bsaw_Pin;
+  /*Configure GPIO pins : bUpperOctave_Pin bLowerOctave_Pin */
+  GPIO_InitStruct.Pin = bUpperOctave_Pin|bLowerOctave_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : bsquare_Pin bsinus_Pin btriangle_Pin bsaw_Pin */
+  GPIO_InitStruct.Pin = bsquare_Pin|bsinus_Pin|btriangle_Pin|bsaw_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
