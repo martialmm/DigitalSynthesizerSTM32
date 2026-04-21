@@ -10,12 +10,11 @@
 
 #include <stdint.h>
 #include "oscillator.h"
-#include "main.h"
 
-struct LowPassFilter_EMA{
+typedef struct LowPassFilter_EMA{
 	float alpha; // [0..1]: 0 ==> max filtering / 1 ==> no filtering
 	float output;
-};
+}LowPassFilter_EMA_t;
 
 Waveform_t getUserWaveform(void);
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);

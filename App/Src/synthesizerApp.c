@@ -4,6 +4,7 @@
 #include "oscillator.h"
 #include "user_interface.h"
 #include "cs43l22.h"
+#include "main.h"
 
 #define CS43_Reset_Pin GPIO_PIN_4
 #define CS43_Reset_GPIO_Port GPIOD
@@ -29,7 +30,6 @@ void synthesizer(){
 
 	// ADC
 	startADCPotentiometer(ch_hadc1);
-
 
 	while(1){
 	//    if(conversionADCCompleted){

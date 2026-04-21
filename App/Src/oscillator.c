@@ -7,6 +7,7 @@
 
 #include "oscillator.h"
 #include <math.h>
+#include "main.h"
 
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f

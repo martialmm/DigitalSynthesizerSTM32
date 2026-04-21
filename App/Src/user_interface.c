@@ -54,7 +54,7 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 
 float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) {
 	// Filtering ADC inputs with Exponential Moving Average filter
-	static struct LowPassFilter_EMA lowPassFilterEMA;
+	static LowPassFilter_EMA_t lowPassFilterEMA;
 	// init low pass filter to get clean potentiometer ADC inputs
 	lowPassFilterEMA.alpha = 0.1f;
 

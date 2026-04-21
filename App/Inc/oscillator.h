@@ -9,7 +9,7 @@
 #define INC_OSCILLATOR_H_
 
 #include <stdint.h>
-#include "main.h"
+#include "stm32f4xx_hal.h"
 
 #define NUMBER_OF_FRAMES_PER_HALF 32  // 32 samples (left+right) for each call
 #define TOTAL_BUFFER_SIZE (NUMBER_OF_FRAMES_PER_HALF * 2 * 2) // 32 frames * 2 (L/R) * 2 (halves) = 128 values
