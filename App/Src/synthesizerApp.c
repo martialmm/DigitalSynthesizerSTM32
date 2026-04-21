@@ -1,0 +1,68 @@
+#include <string.h>
+#include <stdio.h>
+#include "synthesizerApp.h"
+#include "oscillator.h"
+#include "user_interface.h"
+#include "cs43l22.h"
+
+#define CS43_Reset_Pin GPIO_PIN_4
+#define CS43_Reset_GPIO_Port GPIOD
+
+static void cs43_config();
+
+CS43L22_HandleTypeDef hcs43;
+
+void synthesizer(){
+
+	// Configure CS43 audio chip
+	cs43_config();
+	CS43L22_Initialization(&hcs43);
+	unmuteHeadphoneOutput(&hcs43);
+	setHeadphoneVolume(&hcs43, 50);
+
+	// Init phase
+	initializeSynthesizer();
+	initializeOscillator(&osc1);
+
+	// I2S
+	startI2SOscillator(ch_hi2s2);
+
+	// ADC
+	startADCPotentiometer(ch_hadc1);
+
+
+	while(1){
+	//    if(conversionADCCompleted){
+	//    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
+	//    	conversionADCCompleted = 0;
+	//    }
+
+		osc1.volume = 50.0f; //processVolumePotentiometer(potentiometerRawValue);
+
+		//Waveform_t selectedWaveform = getUserWaveform();
+	//    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
+	//    	setOscillatorWaveform(&osc1, selectedWaveform);
+	//    }
+		setOscillatorWaveform(&osc1, SINUS);
+
+	   // temp for tests
+	   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
+		osc1.frequency = 523.25f;
+		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
+	   }
+
+	   else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
+		osc1.frequency = 783.99f;
+		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
+	   }
+	}
+}
+
+static void cs43_config()
+{
+	hcs43.i2c = ch_hi2c1;
+	hcs43.i2s = ch_hi2s2;
+	hcs43.deviceAddress = 0x94;
+	hcs43.Init.resetPort = CS43_Reset_GPIO_Port;
+	hcs43.Init.resetPin = CS43_Reset_Pin;
+}

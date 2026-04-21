@@ -11,11 +11,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
-#include <stdio.h>
-#include "oscillator.h"
-#include "user_interface.h"
-#include "cs43l22.h"
+#include "synthesizerApp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -25,8 +21,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define CS43_Reset_Pin GPIO_PIN_4
-#define CS43_Reset_GPIO_Port GPIOD
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,7 +42,7 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
-CS43L22_HandleTypeDef hcs43;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,7 +55,7 @@ static void MX_I2S2_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-static void cs43_config();
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -83,9 +78,12 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
-  // this variable is used to make sure we have a real "zeroed-volume" when potentiometer is at its physical zero value (which is never zero actually)
-  // --> see "deadband"
+  ch_ch_hdma_spi2_tx = &hdma_spi2_tx;
+  ch_hadc1 = &hadc1;
+  ch_hi2c1 = &hi2c1;
+  ch_hi2s2 = &hi2s2;
+  ch_hspi1 = &hspi1;
+  ch_huart1 = &huart1;
 
   /* USER CODE END 1 */
 
@@ -95,7 +93,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  cs43_config();
+
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -113,51 +111,13 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
-  // Configure CS43 audio chip
-
-  CS43L22_Initialization(&hcs43);
-  unmuteHeadphoneOutput(&hcs43);
-  setHeadphoneVolume(&hcs43, 50);
-
-  // Init phase
-  initializeSynthesizer();
-  initializeOscillator(&osc1);
-
-  // I2S
-  startI2SOscillator(&hi2s2);
-
-  // ADC
-  startADCPotentiometer(&hadc1);
-
+  synthesizer();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while(1){
-//    if(conversionADCCompleted){
-//    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
-//    	conversionADCCompleted = 0;
-//    }
 
-    osc1.volume = 50.0f; //processVolumePotentiometer(potentiometerRawValue);
-
-    //Waveform_t selectedWaveform = getUserWaveform();
-//    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
-//    	setOscillatorWaveform(&osc1, selectedWaveform);
-//    }
-    setOscillatorWaveform(&osc1, SINUS);
-
-   // temp for tests
-   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
-	osc1.frequency = 523.25f;
-	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s2);
-   }
-
-   else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
-	osc1.frequency = 783.99f;
-	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s2);
-   }
   }
     /* USER CODE END WHILE */
 
@@ -463,14 +423,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void cs43_config()
-{
-	hcs43.i2c = &hi2c1;
-	hcs43.i2s = &hi2s2;
-	hcs43.deviceAddress = 0x94;
-	hcs43.Init.resetPort = CS43_Reset_GPIO_Port;
-	hcs43.Init.resetPin = CS43_Reset_Pin;
-}
+
 /* USER CODE END 4 */
 
 /**

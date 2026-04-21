@@ -1,0 +1,22 @@
+/*
+ * synthesizerApp.h
+ *
+ *  Created on: Apr 21, 2026
+ *      Author: mars
+ */
+
+#ifndef INC_SYNTHESIZERAPP_H_
+#define INC_SYNTHESIZERAPP_H_
+
+#include "stm32f4xx_hal.h"
+
+extern ADC_HandleTypeDef* ch_hadc1;
+extern I2C_HandleTypeDef* ch_hi2c1;
+extern I2S_HandleTypeDef* ch_hi2s2;
+extern DMA_HandleTypeDef* ch_ch_hdma_spi2_tx;
+extern SPI_HandleTypeDef* ch_hspi1;
+extern UART_HandleTypeDef* ch_huart1;
+
+void synthesizer();
+
+#endif /* INC_SYNTHESIZERAPP_H_ */
