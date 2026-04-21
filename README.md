@@ -6,7 +6,7 @@ The device is designed as a desktop module (no built-in keyboard) and is control
 
 ## Development Status
 - Current Phase: Breadboard prototyping and functional validation.
-- Hardware: STM32F407 Discovery Board.
+- Hardware: Initial development with STM32F407 Discovery Board and later updated with a STMF411.
 - Future Goal: Custom PCB design for a standalone unit.
 
 ## Features
