@@ -13,26 +13,27 @@ volatile uint8_t conversionADCCompleted = 0;
 
 Waveform_t getUserWaveform(void)
 {
-    if (HAL_GPIO_ReadPin(bsinus_GPIO_Port, bsinus_Pin))
-    {
-    	return SINUS;
-    }
-    else if (HAL_GPIO_ReadPin(btriangle_GPIO_Port, btriangle_Pin))
-    {
-    	return TRIANGLE;
-    }
-    else if (HAL_GPIO_ReadPin(bsaw_GPIO_Port, bsaw_Pin))
-    {
-    	return SAWTOOTH;
-    }
-    else if (HAL_GPIO_ReadPin(bsquare_GPIO_Port, bsquare_Pin))
-    {
-    	return SQUARE;
-    }
-    else
-    {
-    	return SINUS;
-    }
+//    if (HAL_GPIO_ReadPin(bsinus_GPIO_Port, bsinus_Pin))
+//    {
+//    	return SINUS;
+//    }
+//    else if (HAL_GPIO_ReadPin(btriangle_GPIO_Port, btriangle_Pin))
+//    {
+//    	return TRIANGLE;
+//    }
+//    else if (HAL_GPIO_ReadPin(bsaw_GPIO_Port, bsaw_Pin))
+//    {
+//    	return SAWTOOTH;
+//    }
+//    else if (HAL_GPIO_ReadPin(bsquare_GPIO_Port, bsquare_Pin))
+//    {
+//    	return SQUARE;
+//    }
+//    else
+//    {
+//    	return SINUS;
+//    }
+	return SINUS;
 }
 
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {

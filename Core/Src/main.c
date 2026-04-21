@@ -39,10 +39,12 @@ ADC_HandleTypeDef hadc1;
 
 I2C_HandleTypeDef hi2c1;
 
-I2S_HandleTypeDef hi2s3;
-DMA_HandleTypeDef hdma_spi3_tx;
+I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_tx;
 
 SPI_HandleTypeDef hspi1;
+
+UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 CS43L22_HandleTypeDef hcs43;
@@ -52,10 +54,11 @@ CS43L22_HandleTypeDef hcs43;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_I2C1_Init(void);
-static void MX_I2S3_Init(void);
 static void MX_ADC1_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_I2S2_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 static void cs43_config();
 /* USER CODE END PFP */
@@ -78,6 +81,7 @@ static void cs43_config();
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   // this variable is used to make sure we have a real "zeroed-volume" when potentiometer is at its physical zero value (which is never zero actually)
@@ -103,10 +107,11 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_I2C1_Init();
-  MX_I2S3_Init();
   MX_ADC1_Init();
+  MX_I2C1_Init();
+  MX_I2S2_Init();
   MX_SPI1_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
   // Configure CS43 audio chip
@@ -120,7 +125,7 @@ int main(void)
   initializeOscillator(&osc1);
 
   // I2S
-  startI2SOscillator(&hi2s3);
+  startI2SOscillator(&hi2s2);
 
   // ADC
   startADCPotentiometer(&hadc1);
@@ -146,12 +151,12 @@ int main(void)
    // temp for tests
    if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
 	osc1.frequency = 523.25f;
-	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
+	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s2);
    }
 
    else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
 	osc1.frequency = 783.99f;
-	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s3);
+	osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, &hi2s2);
    }
   }
     /* USER CODE END WHILE */
@@ -183,9 +188,9 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
-  RCC_OscInitStruct.PLL.PLLN = 168;
+  RCC_OscInitStruct.PLL.PLLN = 100;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -197,10 +202,10 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -293,36 +298,36 @@ static void MX_I2C1_Init(void)
 }
 
 /**
-  * @brief I2S3 Initialization Function
+  * @brief I2S2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2S3_Init(void)
+static void MX_I2S2_Init(void)
 {
 
-  /* USER CODE BEGIN I2S3_Init 0 */
+  /* USER CODE BEGIN I2S2_Init 0 */
 
-  /* USER CODE END I2S3_Init 0 */
+  /* USER CODE END I2S2_Init 0 */
 
-  /* USER CODE BEGIN I2S3_Init 1 */
+  /* USER CODE BEGIN I2S2_Init 1 */
 
-  /* USER CODE END I2S3_Init 1 */
-  hi2s3.Instance = SPI3;
-  hi2s3.Init.Mode = I2S_MODE_MASTER_TX;
-  hi2s3.Init.Standard = I2S_STANDARD_PHILIPS;
-  hi2s3.Init.DataFormat = I2S_DATAFORMAT_16B;
-  hi2s3.Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
-  hi2s3.Init.AudioFreq = I2S_AUDIOFREQ_48K;
-  hi2s3.Init.CPOL = I2S_CPOL_LOW;
-  hi2s3.Init.ClockSource = I2S_CLOCK_PLL;
-  hi2s3.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
-  if (HAL_I2S_Init(&hi2s3) != HAL_OK)
+  /* USER CODE END I2S2_Init 1 */
+  hi2s2.Instance = SPI2;
+  hi2s2.Init.Mode = I2S_MODE_MASTER_TX;
+  hi2s2.Init.Standard = I2S_STANDARD_PHILIPS;
+  hi2s2.Init.DataFormat = I2S_DATAFORMAT_16B;
+  hi2s2.Init.MCLKOutput = I2S_MCLKOUTPUT_ENABLE;
+  hi2s2.Init.AudioFreq = I2S_AUDIOFREQ_48K;
+  hi2s2.Init.CPOL = I2S_CPOL_LOW;
+  hi2s2.Init.ClockSource = I2S_CLOCK_PLL;
+  hi2s2.Init.FullDuplexMode = I2S_FULLDUPLEXMODE_DISABLE;
+  if (HAL_I2S_Init(&hi2s2) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2S3_Init 2 */
+  /* USER CODE BEGIN I2S2_Init 2 */
 
-  /* USER CODE END I2S3_Init 2 */
+  /* USER CODE END I2S2_Init 2 */
 
 }
 
@@ -365,6 +370,39 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -374,9 +412,9 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA1_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
 
 }
 
@@ -388,76 +426,47 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOE_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(S0_MUX_GPIO_Port, S0_MUX_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, S0_MUX_Pin|S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOE, S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Audio_RST_GPIO_Port, Audio_RST_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : S0_MUX_Pin */
-  GPIO_InitStruct.Pin = S0_MUX_Pin;
+  /*Configure GPIO pins : S0_MUX_Pin S1_MUX_Pin S2_MUX_Pin Enable_MUX_Pin */
+  GPIO_InitStruct.Pin = S0_MUX_Pin|S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(S0_MUX_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : S1_MUX_Pin S2_MUX_Pin Enable_MUX_Pin */
-  GPIO_InitStruct.Pin = S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : Delay_MonoStereo_Btn_Pin Delay_OnOff_Btn_Pin Reverb_OnOff_Btn_Pin Prev_Page_Display_Btn_Pin
-                           Next_Page_Display_Btn_Pin MUX_Waveforms_Pin */
-  GPIO_InitStruct.Pin = Delay_MonoStereo_Btn_Pin|Delay_OnOff_Btn_Pin|Reverb_OnOff_Btn_Pin|Prev_Page_Display_Btn_Pin
-                          |Next_Page_Display_Btn_Pin|MUX_Waveforms_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : bUpperOctave_Pin bLowerOctave_Pin */
-  GPIO_InitStruct.Pin = bUpperOctave_Pin|bLowerOctave_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : bsquare_Pin bsinus_Pin btriangle_Pin bsaw_Pin */
-  GPIO_InitStruct.Pin = bsquare_Pin|bsinus_Pin|btriangle_Pin|bsaw_Pin;
+  /*Configure GPIO pin : MUX_Switch_Waveforms_Pin */
+  GPIO_InitStruct.Pin = MUX_Switch_Waveforms_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MUX_Switch_Waveforms_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : Delay_MonoStereo_Btn_Pin Delay_OnOff_Btn_Pin Reverb_OnOff_Btn_Pin bUpperOctave_Pin
+                           bLowerOctave_Pin */
+  GPIO_InitStruct.Pin = Delay_MonoStereo_Btn_Pin|Delay_OnOff_Btn_Pin|Reverb_OnOff_Btn_Pin|bUpperOctave_Pin
+                          |bLowerOctave_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Audio_RST_Pin */
-  GPIO_InitStruct.Pin = Audio_RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(Audio_RST_GPIO_Port, &GPIO_InitStruct);
-
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
 static void cs43_config()
 {
 	hcs43.i2c = &hi2c1;
-	hcs43.i2s = &hi2s3;
+	hcs43.i2s = &hi2s2;
 	hcs43.deviceAddress = 0x94;
 	hcs43.Init.resetPort = CS43_Reset_GPIO_Port;
 	hcs43.Init.resetPin = CS43_Reset_Pin;
@@ -478,8 +487,7 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
