@@ -52,9 +52,15 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 	return linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
 }
 
-float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) {
+float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
 	// Filtering ADC inputs with Exponential Moving Average filter
 	static LowPassFilter_EMA_t lowPassFilterEMA;
+	float linearScaledDeadbandPotentiometer = 0.0f;
+	const float potentiometerDeadband = 25.0f;
+
+	// Potentiometer Deadband
+	linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer((float)potentiometerValue, potentiometerDeadband);
+
 	// init low pass filter to get clean potentiometer ADC inputs
 	lowPassFilterEMA.alpha = 0.1f;
 
@@ -63,16 +69,12 @@ float lowPassFilterPotentiometerInputs(float linearScaledDeadbandPotentiometer) 
 }
 
 float processVolumePotentiometer(uint16_t potentiometerRawValue){
-	float linearScaledDeadbandPotentiometer;
-	const float potentiometerDeadband = 25.0f;
-
-	// Potentiometer Deadband
-	linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer(potentiometerRawValue, potentiometerDeadband);
+	float expScaledPotentiometer = 0.0f;
 
 	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
-	linearScaledDeadbandPotentiometer = approximateExpFunction(linearScaledDeadbandPotentiometer);
+	expScaledPotentiometer = approximateExpFunction(expScaledPotentiometer);
 
-	return lowPassFilterPotentiometerInputs(linearScaledDeadbandPotentiometer);
+	return lowPassFilterPotentiometerInput(expScaledPotentiometer);
 }
 
 void startADCPotentiometer(ADC_HandleTypeDef *hadc) {
