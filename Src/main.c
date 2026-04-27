@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "synthesizerApp.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -75,7 +75,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  ch_ch_hdma_spi2_tx = &hdma_spi2_tx;
+  ch_hadc1 = &hadc1;
+  ch_hi2c1 = &hi2c1;
+  ch_hi2s2 = &hi2s2;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -101,7 +104,7 @@ int main(void)
   MX_I2C1_Init();
   MX_I2S2_Init();
   /* USER CODE BEGIN 2 */
-
+  synthesizer();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -109,7 +112,6 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

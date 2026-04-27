@@ -20,6 +20,11 @@ static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
 Oscillator_t osc1;
 
+ADC_HandleTypeDef* ch_hadc1 = NULL;
+I2C_HandleTypeDef* ch_hi2c1 = NULL;
+I2S_HandleTypeDef* ch_hi2s2 = NULL;
+DMA_HandleTypeDef* ch_ch_hdma_spi2_tx = NULL;
+
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
 	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
 }
