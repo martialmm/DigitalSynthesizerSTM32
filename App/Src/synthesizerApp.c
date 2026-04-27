@@ -16,10 +16,10 @@ CS43L22_HandleTypeDef hcs43;
 void synthesizer(){
 
 	// Configure CS43 audio chip
-	cs43_config();
-	CS43L22_Initialization(&hcs43);
-	unmuteHeadphoneOutput(&hcs43);
-	setHeadphoneVolume(&hcs43, 50);
+//	cs43_config();
+//	CS43L22_Initialization(&hcs43);
+//	unmuteHeadphoneOutput(&hcs43);
+//	setHeadphoneVolume(&hcs43, 50);
 
 	// Init phase
 	initializeSynthesizer();
@@ -34,15 +34,18 @@ void synthesizer(){
 	while(1){
 	    scanUserInputs();
 
-	    if(conversionADCCompleted){
-	    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
-	    	conversionADCCompleted = 0;
-	    }
+//	    if(conversionADCCompleted){
+//	    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
+//	    	conversionADCCompleted = 0;
+//	    }
+
+	    osc1.volume = 50.0;
 
 		Waveform_t selectedWaveform = getUserWaveform();
-	    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
-	    	setOscillatorWaveform(&osc1, selectedWaveform);
-	    }
+		setOscillatorWaveform(&osc1, selectedWaveform);
+//	    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
+//	    	setOscillatorWaveform(&osc1, selectedWaveform);
+//	    }
 
 	   // temp for tests
 	   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){

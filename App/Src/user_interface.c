@@ -10,6 +10,7 @@
 
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
+volatile UserInputs_t userInputs;
 
 Waveform_t getUserWaveform(void)
 {
@@ -37,11 +38,14 @@ Waveform_t getUserWaveform(void)
 }
 
 void scanUserInputs(){
+	HAL_GPIO_WritePin(testLED_GPIO_Port, testLED_Pin, GPIO_PIN_RESET);
 	if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bUpperOctave_Pin)){
 		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
+		HAL_GPIO_WritePin(testLED_GPIO_Port, testLED_Pin, GPIO_PIN_SET);
 	}
 	if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
 		userInputs.buttonsState |= BTN_UPPER_OCTAVE;
+		HAL_GPIO_WritePin(testLED_GPIO_Port, testLED_Pin, GPIO_PIN_RESET);
 	}
 }
 

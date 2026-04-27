@@ -37,7 +37,6 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -84,16 +83,10 @@ void Error_Handler(void);
 #define bUpperOctave_GPIO_Port GPIOA
 #define bLowerOctave_Pin GPIO_PIN_12
 #define bLowerOctave_GPIO_Port GPIOA
-#define UART_TX_MIDI_Pin GPIO_PIN_15
-#define UART_TX_MIDI_GPIO_Port GPIOA
-#define SPI1_SCK_Display_Pin GPIO_PIN_3
-#define SPI1_SCK_Display_GPIO_Port GPIOB
-#define SPI1_MOSI_Display_Pin GPIO_PIN_5
-#define SPI1_MOSI_Display_GPIO_Port GPIOB
+#define testLED_Pin GPIO_PIN_5
+#define testLED_GPIO_Port GPIOB
 #define I2C1_SCL_Pin GPIO_PIN_6
 #define I2C1_SCL_GPIO_Port GPIOB
-#define UART_RX_MIDI_Pin GPIO_PIN_7
-#define UART_RX_MIDI_GPIO_Port GPIOB
 #define I2C1_SDA_Pin GPIO_PIN_9
 #define I2C1_SDA_GPIO_Port GPIOB
 
