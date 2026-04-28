@@ -62,12 +62,13 @@ typedef struct {
 } UserInputs_t;
 
 Waveform_t getUserWaveform(void);
-void scanUserInputs(void);
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);
 float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
 void startADCPotentiometer(ADC_HandleTypeDef *hadc);
+void selectMultiplexerChannel(uint8_t channel);
+void scanUserInputs(void);
 
 extern uint32_t potentiometerRawValue;
 extern volatile uint8_t conversionADCCompleted;

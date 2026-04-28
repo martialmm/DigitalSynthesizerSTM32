@@ -36,9 +36,7 @@ Waveform_t getUserWaveform(void)
 //    }
 
 	HAL_GPIO_WritePin(Enable_MUX_GPIO_Port, Enable_MUX_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(S0_MUX_GPIO_Port, S0_MUX_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(S1_MUX_GPIO_Port, S1_MUX_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(S2_MUX_GPIO_Port, S2_MUX_Pin, GPIO_PIN_RESET);
+	selectMultiplexerChannel(0);
 
 	if(HAL_GPIO_ReadPin(MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin)){
 		return SINUS;
@@ -46,6 +44,12 @@ Waveform_t getUserWaveform(void)
 	else{
 		return TRIANGLE;
 	}
+}
+
+void selectMultiplexerChannel(uint8_t channel){
+	HAL_GPIO_WritePin(S0_MUX_GPIO_Port, S0_MUX_Pin, (channel & (1 << 0)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(S1_MUX_GPIO_Port, S1_MUX_Pin, (channel & (1 << 1)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(S2_MUX_GPIO_Port, S2_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void scanUserInputs(){
