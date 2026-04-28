@@ -39,11 +39,13 @@ Waveform_t getUserWaveform(void)
 
 void scanUserInputs(){
 	HAL_GPIO_WritePin(testLED_GPIO_Port, testLED_Pin, GPIO_PIN_RESET);
-	if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bUpperOctave_Pin)){
+	if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
 		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
+		HAL_GPIO_WritePin(testLED_GPIO_Port, testLED_Pin, GPIO_PIN_SET);
 	}
 	if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
 		userInputs.buttonsState |= BTN_UPPER_OCTAVE;
+		HAL_GPIO_WritePin(testLED_GPIO_Port, testLED_Pin, GPIO_PIN_SET);
 	}
 }
 

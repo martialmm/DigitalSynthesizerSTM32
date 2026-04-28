@@ -3,15 +3,7 @@
 #include "synthesizerApp.h"
 #include "oscillator.h"
 #include "user_interface.h"
-#include "cs43l22.h"
 #include "main.h"
-
-#define CS43_Reset_Pin GPIO_PIN_4
-#define CS43_Reset_GPIO_Port GPIOD
-
-static void cs43_config();
-
-CS43L22_HandleTypeDef hcs43;
 
 void synthesizer(){
 
@@ -39,10 +31,10 @@ void synthesizer(){
 //	    	conversionADCCompleted = 0;
 //	    }
 
-	    osc1.volume = 50.0;
+	    osc1.volume = 1.0f;
 
 		Waveform_t selectedWaveform = getUserWaveform();
-		setOscillatorWaveform(&osc1, selectedWaveform);
+		setOscillatorWaveform(&osc1, SINUS);
 //	    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
 //	    	setOscillatorWaveform(&osc1, selectedWaveform);
 //	    }
@@ -58,13 +50,4 @@ void synthesizer(){
 		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
 	   }
 	}
-}
-
-static void cs43_config()
-{
-	hcs43.i2c = ch_hi2c1;
-	hcs43.i2s = ch_hi2s2;
-	hcs43.deviceAddress = 0x94;
-	hcs43.Init.resetPort = CS43_Reset_GPIO_Port;
-	hcs43.Init.resetPin = CS43_Reset_Pin;
 }
