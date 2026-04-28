@@ -34,7 +34,7 @@ void synthesizer(){
 	    osc1.volume = 1.0f;
 
 		Waveform_t selectedWaveform = getUserWaveform();
-		setOscillatorWaveform(&osc1, SINUS);
+		setOscillatorWaveform(&osc1, selectedWaveform);
 //	    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
 //	    	setOscillatorWaveform(&osc1, selectedWaveform);
 //	    }
