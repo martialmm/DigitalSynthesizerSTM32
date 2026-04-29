@@ -64,6 +64,7 @@ void createAllLookupTables(){
 }
 
 void initializeSynthesizer(){
+	HAL_GPIO_WritePin(Enable_MUX_GPIO_Port, Enable_MUX_Pin, GPIO_PIN_RESET);
 	createAllLookupTables();
 }
 
@@ -79,9 +80,13 @@ void initializeOscillator(Oscillator_t* oscillator){
 }
 
 void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform) {
-    if (waveform != NONE && waveform != osc->waveform) {
+    if (waveform != NONE) {
         osc->waveform = waveform;
         osc->activeLookupTable = defineActiveLookupTableWaveform(waveform);
+    }
+    else{
+        osc->waveform = NONE;
+        osc->activeLookupTable = NULL;
     }
 }
 
@@ -147,7 +152,12 @@ void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_
 			oscillator->enveloppe -= antipopFactor;
 			if (oscillator->enveloppe < 0.0f) oscillator->enveloppe = 0.0f;
 		}
-		output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->enveloppe * oscillator->volume;
+
+        if(oscillator->activeLookupTable != NULL) {
+            output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->enveloppe * oscillator->volume;
+        } else {
+            output = 0.0f;
+        }
 
 		// securite pour pas perde un ou deux tympans
 		if (output > 32767.0f) output = 32767.0f;

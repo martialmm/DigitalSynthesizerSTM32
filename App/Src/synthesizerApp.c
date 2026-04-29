@@ -35,9 +35,6 @@ void synthesizer(){
 
 		Waveform_t selectedWaveform = getUserWaveform();
 		setOscillatorWaveform(&osc1, selectedWaveform);
-//	    if (selectedWaveform != osc1.waveform && selectedWaveform != NONE){
-//	    	setOscillatorWaveform(&osc1, selectedWaveform);
-//	    }
 
 	   // temp for tests
 	   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){

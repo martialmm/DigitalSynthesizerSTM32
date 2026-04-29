@@ -14,36 +14,16 @@ volatile UserInputs_t userInputs;
 
 Waveform_t getUserWaveform(void)
 {
-//    if (HAL_GPIO_ReadPin(bsinus_GPIO_Port, bsinus_Pin))
-//    {
-//    	return SINUS;
-//    }
-//    else if (HAL_GPIO_ReadPin(btriangle_GPIO_Port, btriangle_Pin))
-//    {
-//    	return TRIANGLE;
-//    }
-//    else if (HAL_GPIO_ReadPin(bsaw_GPIO_Port, bsaw_Pin))
-//    {
-//    	return SAWTOOTH;
-//    }
-//    else if (HAL_GPIO_ReadPin(bsquare_GPIO_Port, bsquare_Pin))
-//    {
-//    	return SQUARE;
-//    }
-//    else
-//    {
-//    	return SINUS;
-//    }
-
-	HAL_GPIO_WritePin(Enable_MUX_GPIO_Port, Enable_MUX_Pin, GPIO_PIN_RESET);
-	selectMultiplexerChannel(0);
-
-	if(HAL_GPIO_ReadPin(MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin)){
-		return SINUS;
+	for(int channel = 0; channel < 4; channel++){
+		selectMultiplexerChannel(channel);
+		if(HAL_GPIO_ReadPin(MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin)){
+			if(channel == 0) return SINUS;
+			if(channel == 1) return TRIANGLE;
+			if(channel == 2) return SAWTOOTH;
+			if(channel == 3) return SQUARE;
+		}
 	}
-	else{
-		return TRIANGLE;
-	}
+	return NONE;
 }
 
 void selectMultiplexerChannel(uint8_t channel){
