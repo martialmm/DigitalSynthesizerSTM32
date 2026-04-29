@@ -8,6 +8,8 @@
 #include "user_interface.h"
 #include "main.h"
 
+static void scanPushButtonsInputsForNotes();
+
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
 volatile UserInputs_t userInputs;
@@ -26,22 +28,24 @@ void selectWaveformsMuxChannel(uint8_t channel){
 	HAL_GPIO_WritePin(S2_MUX_GPIO_Port, S2_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
+static void scanPushButtonsInputsForNotes() {
+	// Temp Push buttons to trigger sounds
+	if (HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)) {
+		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
+	} else {
+		userInputs.buttonsState &= ~BTN_LOWER_OCTAVE;
+	}
+	if (HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)) {
+		userInputs.buttonsState |= BTN_UPPER_OCTAVE;
+	} else {
+		userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
+	}
+}
+
 void scanUserInputs(){
 
 	// Push buttons to trigger sounds
-	if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
-		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
-	}
-	else{
-		userInputs.buttonsState &= ~BTN_LOWER_OCTAVE;
-	}
-	if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
-		userInputs.buttonsState |= BTN_UPPER_OCTAVE;
-	}
-	else{
-		userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
-	}
-
+	scanPushButtonsInputsForNotes();
 	// Multiplexer scan for waveforms switches
 	for(int channel = 0; channel < 4; channel++){
 	    selectWaveformsMuxChannel(channel);
