@@ -83,6 +83,8 @@ void Error_Handler(void);
 #define bUpperOctave_GPIO_Port GPIOA
 #define bLowerOctave_Pin GPIO_PIN_12
 #define bLowerOctave_GPIO_Port GPIOA
+#define debugLED_Pin GPIO_PIN_5
+#define debugLED_GPIO_Port GPIOB
 #define I2C1_SCL_Pin GPIO_PIN_6
 #define I2C1_SCL_GPIO_Port GPIOB
 #define I2C1_SDA_Pin GPIO_PIN_9

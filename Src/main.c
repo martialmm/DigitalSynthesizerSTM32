@@ -47,6 +47,8 @@ I2C_HandleTypeDef hi2c1;
 I2S_HandleTypeDef hi2s2;
 DMA_HandleTypeDef hdma_spi2_tx;
 
+TIM_HandleTypeDef htim10;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -58,6 +60,7 @@ static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2S2_Init(void);
+static void MX_TIM10_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -75,10 +78,11 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  ch_ch_hdma_spi2_tx = &hdma_spi2_tx;
+  ch_hdma_spi2_tx = &hdma_spi2_tx;
   ch_hadc1 = &hadc1;
   ch_hi2c1 = &hi2c1;
   ch_hi2s2 = &hi2s2;
+  ch_htim10 = &htim10;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -103,6 +107,7 @@ int main(void)
   MX_ADC1_Init();
   MX_I2C1_Init();
   MX_I2S2_Init();
+  MX_TIM10_Init();
   /* USER CODE BEGIN 2 */
   synthesizer();
   /* USER CODE END 2 */
@@ -284,6 +289,37 @@ static void MX_I2S2_Init(void)
 }
 
 /**
+  * @brief TIM10 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM10_Init(void)
+{
+
+  /* USER CODE BEGIN TIM10_Init 0 */
+
+  /* USER CODE END TIM10_Init 0 */
+
+  /* USER CODE BEGIN TIM10_Init 1 */
+
+  /* USER CODE END TIM10_Init 1 */
+  htim10.Instance = TIM10;
+  htim10.Init.Prescaler = 84 - 1;
+  htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim10.Init.Period = 1000 - 1;
+  htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM10_Init 2 */
+
+  /* USER CODE END TIM10_Init 2 */
+
+}
+
+/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -319,6 +355,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, S0_MUX_Pin|S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(debugLED_GPIO_Port, debugLED_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pins : S0_MUX_Pin S1_MUX_Pin S2_MUX_Pin Enable_MUX_Pin */
   GPIO_InitStruct.Pin = S0_MUX_Pin|S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -339,6 +378,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : debugLED_Pin */
+  GPIO_InitStruct.Pin = debugLED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(debugLED_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

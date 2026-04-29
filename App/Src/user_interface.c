@@ -14,6 +14,7 @@ static void scanWaveformsSwitches(void);
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
 volatile UserInputs_t userInputs;
+TIM_HandleTypeDef* ch_htim10 = NULL;
 
 Waveform_t getUserWaveform(void){
 	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
@@ -134,5 +135,11 @@ void startADCPotentiometer(ADC_HandleTypeDef *hadc) {
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	conversionADCCompleted = 1;
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	if(htim == ch_htim10){
+		scanUserInputs();
+	}
 }
 

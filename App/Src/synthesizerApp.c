@@ -7,12 +7,6 @@
 
 void synthesizer(){
 
-	// Configure CS43 audio chip
-//	cs43_config();
-//	CS43L22_Initialization(&hcs43);
-//	unmuteHeadphoneOutput(&hcs43);
-//	setHeadphoneVolume(&hcs43, 50);
-
 	// Init phase
 	initializeSynthesizer();
 	initializeOscillator(&osc1);
@@ -23,9 +17,10 @@ void synthesizer(){
 	// ADC
 	startADCPotentiometer(ch_hadc1);
 
-	while(1){
-	    scanUserInputs();
+	// TIMER
+	HAL_TIM_Base_Start_IT(ch_htim10);
 
+	while(1){
 //	    if(conversionADCCompleted){
 //	    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
 //	    	conversionADCCompleted = 0;
