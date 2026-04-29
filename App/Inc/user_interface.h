@@ -67,7 +67,7 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
 void startADCPotentiometer(ADC_HandleTypeDef *hadc);
-void selectMultiplexerChannel(uint8_t channel);
+void selectWaveformsMuxChannel(uint8_t channel);
 void scanUserInputs(void);
 
 extern uint32_t potentiometerRawValue;

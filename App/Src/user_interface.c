@@ -12,27 +12,23 @@ uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
 volatile UserInputs_t userInputs;
 
-Waveform_t getUserWaveform(void)
-{
-	for(int channel = 0; channel < 4; channel++){
-		selectMultiplexerChannel(channel);
-		if(HAL_GPIO_ReadPin(MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin)){
-			if(channel == 0) return SINUS;
-			if(channel == 1) return TRIANGLE;
-			if(channel == 2) return SAWTOOTH;
-			if(channel == 3) return SQUARE;
-		}
-	}
+Waveform_t getUserWaveform(void){
+	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
+	if(userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
+	if(userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;
+	if(userInputs.buttonsState & BTN_OSC1_SQUARE) return SQUARE;
 	return NONE;
 }
 
-void selectMultiplexerChannel(uint8_t channel){
+void selectWaveformsMuxChannel(uint8_t channel){
 	HAL_GPIO_WritePin(S0_MUX_GPIO_Port, S0_MUX_Pin, (channel & (1 << 0)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(S1_MUX_GPIO_Port, S1_MUX_Pin, (channel & (1 << 1)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(S2_MUX_GPIO_Port, S2_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void scanUserInputs(){
+
+	// Push buttons to trigger sounds
 	if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
 		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
 	}
@@ -44,6 +40,30 @@ void scanUserInputs(){
 	}
 	else{
 		userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
+	}
+
+	// Multiplexer scan for waveforms switches
+	for(int channel = 0; channel < 4; channel++){
+	    selectWaveformsMuxChannel(channel);
+	    GPIO_PinState pinState = HAL_GPIO_ReadPin(MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
+	    switch(channel){
+	        case 0:
+	            if(pinState) userInputs.buttonsState |= BTN_OSC1_SINUS;
+	            else userInputs.buttonsState &= ~BTN_OSC1_SINUS;
+	            break;
+	        case 1:
+	            if(pinState) userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
+	            else userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
+	            break;
+	        case 2:
+	            if(pinState) userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
+	            else userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
+	            break;
+	        case 3:
+	            if(pinState) userInputs.buttonsState |= BTN_OSC1_SQUARE;
+	            else userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
+	            break;
+	    }
 	}
 }
 
