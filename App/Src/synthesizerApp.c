@@ -32,12 +32,12 @@ void synthesizer(){
 		setOscillatorWaveform(&osc1, selectedWaveform);
 
 	   // temp for tests
-	   if(HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)){
+	   if(userInputs.buttonsState & BTN_LOWER_OCTAVE){
 		osc1.frequency = 523.25f;
 		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
 	   }
 
-	   else if(HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)){
+	   else if(userInputs.buttonsState & BTN_UPPER_OCTAVE){
 		osc1.frequency = 783.99f;
 		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
 	   }
