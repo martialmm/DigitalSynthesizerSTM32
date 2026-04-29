@@ -8,7 +8,8 @@
 #include "user_interface.h"
 #include "main.h"
 
-static void scanPushButtonsInputsForNotes();
+static void scanPushButtonsInputsForNotes(void);
+static void scanWaveformsSwitches(void);
 
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
@@ -42,33 +43,48 @@ static void scanPushButtonsInputsForNotes() {
 	}
 }
 
-void scanUserInputs(){
-
-	// Push buttons to trigger sounds
-	scanPushButtonsInputsForNotes();
+static void scanWaveformsSwitches() {
 	// Multiplexer scan for waveforms switches
-	for(int channel = 0; channel < 4; channel++){
-	    selectWaveformsMuxChannel(channel);
-	    GPIO_PinState pinState = HAL_GPIO_ReadPin(MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
-	    switch(channel){
-	        case 0:
-	            if(pinState) userInputs.buttonsState |= BTN_OSC1_SINUS;
-	            else userInputs.buttonsState &= ~BTN_OSC1_SINUS;
-	            break;
-	        case 1:
-	            if(pinState) userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
-	            else userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
-	            break;
-	        case 2:
-	            if(pinState) userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
-	            else userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
-	            break;
-	        case 3:
-	            if(pinState) userInputs.buttonsState |= BTN_OSC1_SQUARE;
-	            else userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
-	            break;
-	    }
+	for (int channel = 0; channel < 4; channel++) {
+		selectWaveformsMuxChannel(channel);
+		GPIO_PinState pinState = HAL_GPIO_ReadPin(
+				MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
+		switch (channel) {
+		case 0:
+			if (pinState)
+				userInputs.buttonsState |= BTN_OSC1_SINUS;
+			else
+				userInputs.buttonsState &= ~BTN_OSC1_SINUS;
+
+			break;
+		case 1:
+			if (pinState)
+				userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
+			else
+				userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
+
+			break;
+		case 2:
+			if (pinState)
+				userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
+			else
+				userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
+
+			break;
+		case 3:
+			if (pinState)
+				userInputs.buttonsState |= BTN_OSC1_SQUARE;
+			else
+				userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
+
+			break;
+		}
 	}
+}
+
+void scanUserInputs(){
+	scanPushButtonsInputsForNotes();
+	scanWaveformsSwitches();
 }
 
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
