@@ -3,7 +3,6 @@
 #include "synthesizerApp.h"
 #include "oscillator.h"
 #include "user_interface.h"
-#include "main.h"
 
 void synthesizer(){
 
@@ -12,13 +11,13 @@ void synthesizer(){
 	initializeOscillator(&osc1);
 
 	// I2S
-	startI2SOscillator(ch_hi2s2);
+	startI2SOscillator(i2sForExternalDAC);
 
 	// ADC
 	startADCPotentiometer(ch_hadc1);
 
 	// TIMER
-	HAL_TIM_Base_Start_IT(ch_htim10);
+	HAL_TIM_Base_Start_IT(timerForUserInputsScan);
 
 	while(1){
 //	    if(conversionADCCompleted){
@@ -34,12 +33,12 @@ void synthesizer(){
 	   // temp for tests
 	   if(userInputs.buttonsState & BTN_LOWER_OCTAVE){
 		osc1.frequency = 523.25f;
-		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
+		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, i2sForExternalDAC);
 	   }
 
 	   else if(userInputs.buttonsState & BTN_UPPER_OCTAVE){
 		osc1.frequency = 783.99f;
-		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, ch_hi2s2);
+		osc1.phaseIncrement = computePhaseIncrement(osc1.frequency, i2sForExternalDAC);
 	   }
 	}
 }

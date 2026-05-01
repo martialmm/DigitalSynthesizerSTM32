@@ -22,7 +22,7 @@ Oscillator_t osc1;
 
 ADC_HandleTypeDef* ch_hadc1 = NULL;
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
-I2S_HandleTypeDef* ch_hi2s2 = NULL;
+I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;
 
 
@@ -65,7 +65,7 @@ void createAllLookupTables(){
 }
 
 void initializeSynthesizer(){
-	HAL_GPIO_WritePin(Enable_MUX_GPIO_Port, Enable_MUX_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(Enable_All_MUX_GPIO_Port, Enable_All_MUX_Pin, GPIO_PIN_RESET);
 	createAllLookupTables();
 }
 

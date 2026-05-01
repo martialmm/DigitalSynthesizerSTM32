@@ -14,7 +14,7 @@ static void scanWaveformsSwitches(void);
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
 volatile UserInputs_t userInputs;
-TIM_HandleTypeDef* ch_htim10 = NULL;
+TIM_HandleTypeDef* timerForUserInputsScan = NULL;
 
 Waveform_t getUserWaveform(void){
 	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
@@ -25,9 +25,9 @@ Waveform_t getUserWaveform(void){
 }
 
 void selectWaveformsMuxChannel(uint8_t channel){
-	HAL_GPIO_WritePin(S0_MUX_GPIO_Port, S0_MUX_Pin, (channel & (1 << 0)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(S1_MUX_GPIO_Port, S1_MUX_Pin, (channel & (1 << 1)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(S2_MUX_GPIO_Port, S2_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(S0_All_MUX_GPIO_Port, S0_All_MUX_Pin, (channel & (1 << 0)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(S1_All_MUX_GPIO_Port, S1_All_MUX_Pin, (channel & (1 << 1)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(S2_All_MUX_GPIO_Port, S2_All_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 static void scanPushButtonsInputsForNotes() {
@@ -138,7 +138,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
-	if(htim == ch_htim10){
+	if(htim == timerForUserInputsScan){
 		scanUserInputs();
 	}
 }

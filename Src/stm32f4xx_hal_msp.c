@@ -101,12 +101,12 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     PB0     ------> ADC1_IN8
     PB1     ------> ADC1_IN9
     */
-    GPIO_InitStruct.Pin = MUX_POT_3_Pin;
+    GPIO_InitStruct.Pin = MUX_POT_FX_AND_MSTRVOL_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(MUX_POT_3_GPIO_Port, &GPIO_InitStruct);
+    HAL_GPIO_Init(MUX_POT_FX_AND_MSTRVOL_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = MUX_POT_2_Pin|MUX_POT_1_Pin;
+    GPIO_InitStruct.Pin = MUX_POT_FILTER_AND_ADSR_Pin|MUX_POT_MIXER_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -140,9 +140,9 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     PB0     ------> ADC1_IN8
     PB1     ------> ADC1_IN9
     */
-    HAL_GPIO_DeInit(MUX_POT_3_GPIO_Port, MUX_POT_3_Pin);
+    HAL_GPIO_DeInit(MUX_POT_FX_AND_MSTRVOL_GPIO_Port, MUX_POT_FX_AND_MSTRVOL_Pin);
 
-    HAL_GPIO_DeInit(GPIOB, MUX_POT_2_Pin|MUX_POT_1_Pin);
+    HAL_GPIO_DeInit(GPIOB, MUX_POT_FILTER_AND_ADSR_Pin|MUX_POT_MIXER_Pin);
 
     /* USER CODE BEGIN ADC1_MspDeInit 1 */
 
@@ -254,7 +254,7 @@ void HAL_I2S_MspInit(I2S_HandleTypeDef* hi2s)
     PB12     ------> I2S2_WS
     PB15     ------> I2S2_SD
     */
-    GPIO_InitStruct.Pin = GPIO_PIN_10|GPIO_PIN_12|GPIO_PIN_15;
+    GPIO_InitStruct.Pin = I2S_CK_Ext_DAC_Pin|I2S_WS_Ext_DAC_Pin|I2S_SD_Ext_DAC_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -312,7 +312,7 @@ void HAL_I2S_MspDeInit(I2S_HandleTypeDef* hi2s)
     PB12     ------> I2S2_WS
     PB15     ------> I2S2_SD
     */
-    HAL_GPIO_DeInit(GPIOB, GPIO_PIN_10|GPIO_PIN_12|GPIO_PIN_15);
+    HAL_GPIO_DeInit(GPIOB, I2S_CK_Ext_DAC_Pin|I2S_WS_Ext_DAC_Pin|I2S_SD_Ext_DAC_Pin);
 
     /* I2S2 DMA DeInit */
     HAL_DMA_DeInit(hi2s->hdmatx);

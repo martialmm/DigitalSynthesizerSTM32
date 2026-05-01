@@ -57,22 +57,28 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define S0_MUX_Pin GPIO_PIN_0
-#define S0_MUX_GPIO_Port GPIOA
-#define S1_MUX_Pin GPIO_PIN_1
-#define S1_MUX_GPIO_Port GPIOA
-#define S2_MUX_Pin GPIO_PIN_2
-#define S2_MUX_GPIO_Port GPIOA
-#define Enable_MUX_Pin GPIO_PIN_5
-#define Enable_MUX_GPIO_Port GPIOA
-#define MUX_POT_3_Pin GPIO_PIN_7
-#define MUX_POT_3_GPIO_Port GPIOA
-#define MUX_POT_2_Pin GPIO_PIN_0
-#define MUX_POT_2_GPIO_Port GPIOB
-#define MUX_POT_1_Pin GPIO_PIN_1
-#define MUX_POT_1_GPIO_Port GPIOB
+#define S0_All_MUX_Pin GPIO_PIN_0
+#define S0_All_MUX_GPIO_Port GPIOA
+#define S1_All_MUX_Pin GPIO_PIN_1
+#define S1_All_MUX_GPIO_Port GPIOA
+#define S2_All_MUX_Pin GPIO_PIN_2
+#define S2_All_MUX_GPIO_Port GPIOA
+#define Enable_All_MUX_Pin GPIO_PIN_5
+#define Enable_All_MUX_GPIO_Port GPIOA
+#define MUX_POT_FX_AND_MSTRVOL_Pin GPIO_PIN_7
+#define MUX_POT_FX_AND_MSTRVOL_GPIO_Port GPIOA
+#define MUX_POT_FILTER_AND_ADSR_Pin GPIO_PIN_0
+#define MUX_POT_FILTER_AND_ADSR_GPIO_Port GPIOB
+#define MUX_POT_MIXER_Pin GPIO_PIN_1
+#define MUX_POT_MIXER_GPIO_Port GPIOB
 #define MUX_Switch_Waveforms_Pin GPIO_PIN_2
 #define MUX_Switch_Waveforms_GPIO_Port GPIOB
+#define I2S_CK_Ext_DAC_Pin GPIO_PIN_10
+#define I2S_CK_Ext_DAC_GPIO_Port GPIOB
+#define I2S_WS_Ext_DAC_Pin GPIO_PIN_12
+#define I2S_WS_Ext_DAC_GPIO_Port GPIOB
+#define I2S_SD_Ext_DAC_Pin GPIO_PIN_15
+#define I2S_SD_Ext_DAC_GPIO_Port GPIOB
 #define Delay_MonoStereo_Btn_Pin GPIO_PIN_8
 #define Delay_MonoStereo_Btn_GPIO_Port GPIOA
 #define Delay_OnOff_Btn_Pin GPIO_PIN_9

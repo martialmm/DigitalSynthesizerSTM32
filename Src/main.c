@@ -81,8 +81,8 @@ int main(void)
   ch_hdma_spi2_tx = &hdma_spi2_tx;
   ch_hadc1 = &hadc1;
   ch_hi2c1 = &hi2c1;
-  ch_hi2s2 = &hi2s2;
-  ch_htim10 = &htim10;
+  i2sForExternalDAC = &hi2s2;
+  timerForUserInputsScan = &htim10;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -353,13 +353,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, S0_MUX_Pin|S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, S0_All_MUX_Pin|S1_All_MUX_Pin|S2_All_MUX_Pin|Enable_All_MUX_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(debugLED_GPIO_Port, debugLED_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : S0_MUX_Pin S1_MUX_Pin S2_MUX_Pin Enable_MUX_Pin */
-  GPIO_InitStruct.Pin = S0_MUX_Pin|S1_MUX_Pin|S2_MUX_Pin|Enable_MUX_Pin;
+  /*Configure GPIO pins : S0_All_MUX_Pin S1_All_MUX_Pin S2_All_MUX_Pin Enable_All_MUX_Pin */
+  GPIO_InitStruct.Pin = S0_All_MUX_Pin|S1_All_MUX_Pin|S2_All_MUX_Pin|Enable_All_MUX_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
