@@ -20,12 +20,7 @@ void synthesizer(){
 	HAL_TIM_Base_Start_IT(timerForUserInputsScan);
 
 	while(1){
-//	    if(conversionADCCompleted){
-//	    	osc1.volume = processVolumePotentiometer(potentiometerRawValue);
-//	    	conversionADCCompleted = 0;
-//	    }
-
-	    osc1.volume = 1.0f;
+		scanPotentiometers();
 
 		Waveform_t selectedWaveform = getUserWaveform();
 		setOscillatorWaveform(&osc1, selectedWaveform);

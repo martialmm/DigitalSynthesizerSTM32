@@ -20,7 +20,6 @@ static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
 Oscillator_t osc1;
 
-ADC_HandleTypeDef* ch_hadc1 = NULL;
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;

@@ -29,25 +29,28 @@
 
 
 // POTENTIOMETERS
-#define NUMBER_OF_POTS			19
-#define POT_OSC1_VOL			1
-#define POT_OSC1_OCTAVE 		2
-#define POT_OSC2_VOL			3
-#define POT_OSC2_OCTAVE 		4
-#define POT_OSC2_DETUNE 		5
-#define POT_NOISE				6
-#define POT_FILTER_CUTOFF 		7
-#define POT_FILTER_RESONANCE	8
-#define POT_FILTER_ENVELOPPPE	9
-#define POT_ENV_ATTACK			10
-#define POT_ENV_DECAY			11
-#define POT_ENV_SUSTAIN			12
-#define POT_ENV_RELEASE			13
-#define POT_REVERB_HIGHPASS 	14
-#define POT_REVERB_DECAY 		15
-#define POT_REVERB_DRYWET		16
-#define POT_DELAY_RATE			17
-#define POT_DELAY_DRYWET		18
+#define NUMBER_OF_POTS			24
+#define POT_OSC1_VOL			0
+#define POT_OSC1_OCTAVE 		1
+#define POT_OSC2_VOL			2
+#define POT_OSC2_OCTAVE 		3
+#define POT_OSC2_DETUNE 		4
+#define POT_NOISE				5
+
+#define POT_FILTER_CUTOFF 		8
+#define POT_FILTER_RESONANCE	9
+#define POT_FILTER_ENVELOPPPE	10
+#define POT_ENV_ATTACK			11
+#define POT_ENV_DECAY			12
+#define POT_ENV_SUSTAIN			13
+#define POT_ENV_RELEASE			14
+
+#define POT_REVERB_HIGHPASS 	16
+#define POT_REVERB_DECAY 		17
+#define POT_REVERB_DRYWET		18
+#define POT_DELAY_RATE			19
+#define POT_DELAY_DRYWET		20
+#define POT_MASTER_VOLUME		21
 
 
 typedef struct {
@@ -57,8 +60,8 @@ typedef struct {
 
 typedef struct {
 	uint32_t buttonsState;
-	uint16_t potentiometersRaw[NUMBER_OF_POTS];
-	uint16_t potentiometersFiltered[NUMBER_OF_POTS];
+	uint32_t potentiometersRaw[NUMBER_OF_POTS];
+	uint32_t potentiometersFiltered[NUMBER_OF_POTS];
 } UserInputs_t;
 
 Waveform_t getUserWaveform(void);
@@ -68,10 +71,11 @@ float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
 void startADCPotentiometer(ADC_HandleTypeDef *hadc);
 void selectWaveformsMuxChannel(uint8_t channel);
-void scanUserInputs(void);
+void scanUserInputs(uint8_t current_mux_channel);
+void scanPotentiometers();
 
 extern uint32_t potentiometerRawValue;
 extern volatile uint8_t conversionADCCompleted;
-extern volatile UserInputs_t userInputs;
+extern UserInputs_t userInputs;
 
 #endif /* INC_USER_INTERFACE_H_ */

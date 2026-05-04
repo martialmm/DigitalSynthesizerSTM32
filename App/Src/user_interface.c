@@ -9,12 +9,18 @@
 #include "main.h"
 
 static void scanPushButtonsInputsForNotes(void);
-static void scanWaveformsSwitches(void);
+static void scanWaveformsSwitches(uint8_t current_mux_channel);
 
 uint32_t potentiometerRawValue;
 volatile uint8_t conversionADCCompleted = 0;
-volatile UserInputs_t userInputs;
+UserInputs_t userInputs;
 TIM_HandleTypeDef* timerForUserInputsScan = NULL;
+volatile uint8_t current_mux_channel = 0;
+uint16_t adc_dma_buffer[3];
+ADC_HandleTypeDef* ch_hadc1 = NULL;
+
+// temp
+volatile uint8_t reading_mux_channel = 0;
 
 Waveform_t getUserWaveform(void){
 	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
@@ -44,13 +50,10 @@ static void scanPushButtonsInputsForNotes() {
 	}
 }
 
-static void scanWaveformsSwitches() {
+static void scanWaveformsSwitches(uint8_t current_mux_channel) {
 	// Multiplexer scan for waveforms switches
-	for (int channel = 0; channel < 4; channel++) {
-		selectWaveformsMuxChannel(channel);
-		GPIO_PinState pinState = HAL_GPIO_ReadPin(
-				MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
-		switch (channel) {
+		GPIO_PinState pinState = HAL_GPIO_ReadPin( MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
+		switch (current_mux_channel) {
 		case 0:
 			if (pinState)
 				userInputs.buttonsState |= BTN_OSC1_SINUS;
@@ -79,13 +82,19 @@ static void scanWaveformsSwitches() {
 				userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
 
 			break;
+		default:
+			break;
 		}
-	}
 }
 
-void scanUserInputs(){
+void scanPotentiometers(){
+	// ADC mux master volume
+	osc1.volume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_MASTER_VOLUME]);
+}
+
+void scanUserInputs(uint8_t current_mux_channel){
 	scanPushButtonsInputsForNotes();
-	scanWaveformsSwitches();
+	scanWaveformsSwitches(current_mux_channel);
 }
 
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
@@ -107,39 +116,44 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
 	// Filtering ADC inputs with Exponential Moving Average filter
 	static LowPassFilter_EMA_t lowPassFilterEMA;
-	float linearScaledDeadbandPotentiometer = 0.0f;
-	const float potentiometerDeadband = 25.0f;
-
-	// Potentiometer Deadband
-	linearScaledDeadbandPotentiometer = createDeadbandForPotentiometer((float)potentiometerValue, potentiometerDeadband);
 
 	// init low pass filter to get clean potentiometer ADC inputs
 	lowPassFilterEMA.alpha = 0.1f;
 
-	lowPassFilterEMA.output = lowPassFilterEMA.alpha * linearScaledDeadbandPotentiometer + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
+	lowPassFilterEMA.output = lowPassFilterEMA.alpha * potentiometerValue + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
 	return lowPassFilterEMA.output;
 }
 
 float processVolumePotentiometer(uint16_t potentiometerRawValue){
-	float expScaledPotentiometer = 0.0f;
+	float filtered = lowPassFilterPotentiometerInput(potentiometerRawValue);
 
-	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
-	expScaledPotentiometer = approximateExpFunction(expScaledPotentiometer);
+	float normalized = createDeadbandForPotentiometer(filtered, 25.0f);
 
-	return lowPassFilterPotentiometerInput(expScaledPotentiometer);
+	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume
+	return approximateExpFunction(normalized);
 }
 
 void startADCPotentiometer(ADC_HandleTypeDef *hadc) {
-    HAL_ADC_Start_DMA(hadc, &potentiometerRawValue, 1);
+    HAL_ADC_Start_DMA(hadc, (uint32_t*)adc_dma_buffer, 1);
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	conversionADCCompleted = 1;
+	HAL_GPIO_WritePin(debugLED_GPIO_Port, debugLED_Pin, GPIO_PIN_SET);
+	userInputs.potentiometersRaw[0 * 8 + reading_mux_channel] = adc_dma_buffer[0];
+	userInputs.potentiometersRaw[1 * 8 + reading_mux_channel] = adc_dma_buffer[1];
+	userInputs.potentiometersRaw[2 * 8 + reading_mux_channel] = adc_dma_buffer[2];
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 	if(htim == timerForUserInputsScan){
-		scanUserInputs();
+
+		reading_mux_channel = current_mux_channel;
+
+		selectWaveformsMuxChannel(current_mux_channel);
+		scanUserInputs(current_mux_channel);
+		HAL_ADC_Start_DMA(ch_hadc1, (uint32_t*)adc_dma_buffer, 3);
+		current_mux_channel++;
+		if(current_mux_channel >= 8) current_mux_channel = 0;
 	}
 }
 
