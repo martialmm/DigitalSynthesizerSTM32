@@ -10,7 +10,7 @@
 
 #include "stm32f4xx_hal.h"
 
-extern ADC_HandleTypeDef* ch_hadc1;
+extern ADC_HandleTypeDef* adcForPotentiometers;
 extern I2C_HandleTypeDef* ch_hi2c1;
 extern I2S_HandleTypeDef* i2sForExternalDAC;
 extern DMA_HandleTypeDef* ch_hdma_spi2_tx;

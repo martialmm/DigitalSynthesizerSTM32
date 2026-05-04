@@ -11,16 +11,12 @@
 static void scanPushButtonsInputsForNotes(void);
 static void scanWaveformsSwitches(uint8_t current_mux_channel);
 
-uint32_t potentiometerRawValue;
-volatile uint8_t conversionADCCompleted = 0;
 UserInputs_t userInputs;
 TIM_HandleTypeDef* timerForUserInputsScan = NULL;
-volatile uint8_t current_mux_channel = 0;
-uint16_t adc_dma_buffer[3];
-ADC_HandleTypeDef* ch_hadc1 = NULL;
+ADC_HandleTypeDef* adcForPotentiometers = NULL;
+uint16_t potentiometersADCConversionBuffer[3];
+volatile uint8_t currentMuxChannel = 0;
 
-// temp
-volatile uint8_t reading_mux_channel = 0;
 
 Waveform_t getUserWaveform(void){
 	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
@@ -133,27 +129,23 @@ float processVolumePotentiometer(uint16_t potentiometerRawValue){
 	return approximateExpFunction(normalized);
 }
 
-void startADCPotentiometer(ADC_HandleTypeDef *hadc) {
-    HAL_ADC_Start_DMA(hadc, (uint32_t*)adc_dma_buffer, 1);
-}
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	HAL_GPIO_WritePin(debugLED_GPIO_Port, debugLED_Pin, GPIO_PIN_SET);
-	userInputs.potentiometersRaw[0 * 8 + reading_mux_channel] = adc_dma_buffer[0];
-	userInputs.potentiometersRaw[1 * 8 + reading_mux_channel] = adc_dma_buffer[1];
-	userInputs.potentiometersRaw[2 * 8 + reading_mux_channel] = adc_dma_buffer[2];
+	// To fill potentiometers values: userInputs.potentiometersRaw --> tab of size 24
+	// Each potentiometer has its own index
+	// I use 3 channels of the ADC because I have 3 mux
+	userInputs.potentiometersRaw[0 * 8 + currentMuxChannel] = potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
+	userInputs.potentiometersRaw[1 * 8 + currentMuxChannel] = potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
+	userInputs.potentiometersRaw[2 * 8 + currentMuxChannel] = potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
+
+	currentMuxChannel++;
+	if(currentMuxChannel >= 8) currentMuxChannel = 0;
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
+	// Periodic timer interrupt for user inputs scan: switches (polling) + potentiometers (adc + dma)
 	if(htim == timerForUserInputsScan){
-
-		reading_mux_channel = current_mux_channel;
-
-		selectWaveformsMuxChannel(current_mux_channel);
-		scanUserInputs(current_mux_channel);
-		HAL_ADC_Start_DMA(ch_hadc1, (uint32_t*)adc_dma_buffer, 3);
-		current_mux_channel++;
-		if(current_mux_channel >= 8) current_mux_channel = 0;
+		selectWaveformsMuxChannel(currentMuxChannel);
+		scanUserInputs(currentMuxChannel);
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
 	}
 }
-

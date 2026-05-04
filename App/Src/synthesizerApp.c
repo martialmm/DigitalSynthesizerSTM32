@@ -13,9 +13,6 @@ void synthesizer(){
 	// I2S
 	startI2SOscillator(i2sForExternalDAC);
 
-	// ADC
-	startADCPotentiometer(ch_hadc1);
-
 	// TIMER
 	HAL_TIM_Base_Start_IT(timerForUserInputsScan);
 

@@ -80,7 +80,7 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
   ch_hdma_spi2_tx = &hdma_spi2_tx;
-  ch_hadc1 = &hadc1;
+  adcForPotentiometers = &hadc1;
   ch_hi2c1 = &hi2c1;
   i2sForExternalDAC = &hi2s2;
   timerForUserInputsScan = &htim10;
