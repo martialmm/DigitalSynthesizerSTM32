@@ -31,20 +31,19 @@ typedef struct {
     float volume;
     uint32_t phase;
     uint32_t phaseIncrement;
-    int16_t* activeLookupTable;
+    const int16_t* activeLookupTable;
     int8_t detune;
     Waveform_t waveform;
 }Oscillator_t;
 
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s);
-int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
+const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 void startI2SOscillator(I2S_HandleTypeDef* hi2s);
 void createAllLookupTables();
 void initializeSynthesizer();
 void initializeOscillator(Oscillator_t* oscillator);
 void setOscillatorWaveform(Oscillator_t *osc,Waveform_t waveform);
-void feedSinewaveTable(int16_t* sinusLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedTriangleTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedSawtoothTable(int16_t* sawtoothLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude);

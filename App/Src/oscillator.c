@@ -9,12 +9,12 @@
 #include <math.h>
 #include "main.h"
 #include "user_interface.h"
+#include "wavetables.h"
 
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f
 
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
-static int16_t sineLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t triangleLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t sawtoothLookupTable[SAMPLE_NUMBER_LUT];
 static int16_t squareLookupTable[SAMPLE_NUMBER_LUT];
@@ -37,7 +37,7 @@ uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2
 	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
 }
 
-int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
+const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
 	 if(selectedWaveform == SINUS){
 		 return sineLookupTable;
 	 }
@@ -57,7 +57,6 @@ void startI2SOscillator(I2S_HandleTypeDef* hi2s){
 }
 
 void createAllLookupTables(){
-	feedSinewaveTable(sineLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
 	feedTriangleTable(triangleLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
 	feedSawtoothTable(sawtoothLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
 	feedSquareTable(squareLookupTable, SAMPLE_NUMBER_LUT, WAVE_AMPLITUDE);
@@ -88,12 +87,6 @@ void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform) {
         osc->waveform = NONE;
         osc->activeLookupTable = NULL;
     }
-}
-
-void feedSinewaveTable(int16_t* sinusLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
-	for (uint16_t i = 0; i < tableSize; i++) {
-		sinusLookupTable[i] = (int16_t) (waveAmplitude * sin(i * PIPI / tableSize));
-	}
 }
 
 void feedTriangleTable(int16_t* triangleLookupTable, uint16_t tableSize, int32_t waveAmplitude) {
