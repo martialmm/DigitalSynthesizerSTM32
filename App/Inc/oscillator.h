@@ -41,13 +41,9 @@ float processVolumePotentiometer(uint16_t potentiometerRawValue);
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s);
 const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 void startI2SOscillator(I2S_HandleTypeDef* hi2s);
-void createAllLookupTables();
 void initializeSynthesizer();
 void initializeOscillator(Oscillator_t* oscillator);
 void setOscillatorWaveform(Oscillator_t *osc,Waveform_t waveform);
-void feedTriangleTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude);
-void feedSawtoothTable(int16_t* sawtoothLookupTable, uint16_t tableSize, int32_t waveAmplitude);
-void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t waveAmplitude);
 void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames);
 
 extern Oscillator_t osc1;
