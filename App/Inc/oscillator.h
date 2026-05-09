@@ -28,7 +28,8 @@ typedef enum{
 typedef struct {
     float enveloppe;
     float frequency;
-    float volume;
+    float targetVolume;
+    float currentVolume;
     uint32_t phase;
     uint32_t phaseIncrement;
     const int16_t* activeLookupTable;

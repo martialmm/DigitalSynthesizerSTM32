@@ -85,7 +85,7 @@ static void scanWaveformsSwitches(uint8_t current_mux_channel) {
 
 void scanPotentiometers(){
 	// ADC mux master volume
-	osc1.volume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_MASTER_VOLUME]);
+	osc1.targetVolume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_MASTER_VOLUME]);
 }
 
 void scanUserInputs(uint8_t current_mux_channel){

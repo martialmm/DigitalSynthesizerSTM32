@@ -74,7 +74,7 @@ void initializeOscillator(Oscillator_t* oscillator){
 	oscillator->frequency = 0.0f;
 	oscillator->phase = 0;
 	oscillator->phaseIncrement = 0;
-	oscillator->volume = 0.0f;
+	oscillator->targetVolume = 0.0f;
 	oscillator->waveform = SINUS;
 }
 
@@ -134,9 +134,11 @@ void feedSquareTable(int16_t* squareLookupTable, uint16_t tableSize, int32_t wav
 void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
 	const float antipopFactor = 0.001f;
+	const float volumeSmoothing = 0.005f;
 	uint8_t noteButtonPressed = (userInputs.buttonsState & BTN_LOWER_OCTAVE) || (userInputs.buttonsState & BTN_UPPER_OCTAVE);
 
 	for(uint16_t i = 0; i < num_frames; i++){
+		oscillator->currentVolume += (oscillator->targetVolume - oscillator->currentVolume) * volumeSmoothing;
 		if(noteButtonPressed){
 			oscillator->enveloppe += antipopFactor;
 			if(oscillator->enveloppe > 1.0f) oscillator->enveloppe = 1.0f;
@@ -147,7 +149,7 @@ void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_
 		}
 
         if(oscillator->activeLookupTable != NULL) {
-            output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->enveloppe * oscillator->volume;
+            output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->enveloppe * oscillator->currentVolume;
         } else {
             output = 0.0f;
         }

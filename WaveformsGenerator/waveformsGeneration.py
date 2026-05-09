@@ -12,10 +12,10 @@ def generate_sine_table():
         f.write("#ifndef WAVETABLES_H\n#define WAVETABLES_H\n\n")
         f.write("#include <stdint.h>\n\n")
         
-        f.write(f"const int16_t sinusLookupTable[{TABLE_SIZE}] = {{\n")
+        f.write(f"const int16_t sineLookupTable[{TABLE_SIZE}] = {{\n")
         
         for i in range(TABLE_SIZE):
-            value = int(AMPLITUDE * math.sin(2 * math.pi * i / TABLE_SIZE))
+            value = int((AMPLITUDE * math.sin(2 * math.pi * i / TABLE_SIZE)))
             
             # Formatage texte
             f.write(f"    {value},")
