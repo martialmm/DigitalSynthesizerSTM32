@@ -70,7 +70,7 @@ float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
 void selectWaveformsMuxChannel(uint8_t channel);
-void scanUserInputs(uint8_t current_mux_channel);
+void scanUserInputs();
 void scanPotentiometers();
 
 extern UserInputs_t userInputs;

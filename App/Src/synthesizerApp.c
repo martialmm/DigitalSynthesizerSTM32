@@ -17,7 +17,7 @@ void synthesizer(){
 	HAL_TIM_Base_Start_IT(timerForUserInputsScan);
 
 	while(1){
-		scanPotentiometers();
+		scanUserInputs();
 
 		Waveform_t selectedWaveform = getUserWaveform();
 		setOscillatorWaveform(&osc1, selectedWaveform);

@@ -16,6 +16,7 @@ TIM_HandleTypeDef* timerForUserInputsScan = NULL;
 ADC_HandleTypeDef* adcForPotentiometers = NULL;
 uint16_t potentiometersADCConversionBuffer[3];
 volatile uint8_t currentMuxChannel = 0;
+volatile uint8_t scanUserInputsFlag = 0;
 
 
 Waveform_t getUserWaveform(void){
@@ -88,9 +89,14 @@ void scanPotentiometers(){
 	osc1.targetVolume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_OSC1_VOL]);
 }
 
-void scanUserInputs(uint8_t current_mux_channel){
-	scanPushButtonsInputsForNotes();
-	scanWaveformsSwitches(current_mux_channel);
+void scanUserInputs(){
+	if(scanUserInputsFlag){
+		scanPushButtonsInputsForNotes();
+		scanWaveformsSwitches(currentMuxChannel);
+		scanPotentiometers();
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
+		scanUserInputsFlag = 0;
+	}
 }
 
 float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
@@ -144,8 +150,6 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 	// Periodic timer interrupt for user inputs scan: switches (polling) + potentiometers (adc + dma)
 	if(htim == timerForUserInputsScan){
-		selectWaveformsMuxChannel(currentMuxChannel);
-		scanUserInputs(currentMuxChannel);
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
+		scanUserInputsFlag = 1;
 	}
 }
