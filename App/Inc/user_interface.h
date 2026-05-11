@@ -9,8 +9,7 @@
 #define INC_USER_INTERFACE_H_
 
 #include <stdint.h>
-#include "oscillator.h"
-
+#include "synth_params.h"
 
 // SWITCHES
 #define BTN_OSC1_SINUS		 (1 << 0)
@@ -65,7 +64,7 @@ typedef struct {
 } UserInputs_t;
 
 Waveform_t getUserWaveform(void);
-void scanUserInputs();
+void updateSynthParameters(Synthesizer_t* synthesizer);
 
 extern UserInputs_t userInputs;
 

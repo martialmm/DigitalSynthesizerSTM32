@@ -5,11 +5,11 @@
  *      Author: mars
  */
 
-#include "oscillator.h"
 #include <math.h>
 #include "main.h"
-#include "user_interface.h"
+#include "oscillator.h"
 #include "wavetables.h"
+#include "user_interface.h"
 
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f
@@ -18,7 +18,7 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
-Oscillator_t osc1;
+Oscillator_t oscillator1;
 
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
@@ -47,14 +47,19 @@ void initializeOscillator(Oscillator_t* oscillator){
 	oscillator->waveform = SINUS;
 }
 
-void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform) {
+void updateSynthesizerOscillatorState(Oscillator_t* oscillator, Synthesizer_t* synthesizer){
+	oscillator->targetVolume = synthesizer->osc1Volume;
+	//oscillator->waveform = synthesizer->osc1Waveform;
+}
+
+void setOscillatorWaveform(Oscillator_t* oscillator, Waveform_t waveform) {
     if (waveform != NONE) {
-        osc->waveform = waveform;
-        osc->activeLookupTable = defineActiveLookupTableWaveform(waveform);
+    	oscillator->waveform = waveform;
+    	oscillator->activeLookupTable = defineActiveLookupTableWaveform(waveform);
     }
     else{
-        osc->waveform = NONE;
-        osc->activeLookupTable = NULL;
+    	oscillator->waveform = NONE;
+    	oscillator->activeLookupTable = NULL;
     }
 }
 
@@ -108,9 +113,9 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 }
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
+	feedDMAAudioBuffer(&oscillator1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
 }
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
+	feedDMAAudioBuffer(&oscillator1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
 }

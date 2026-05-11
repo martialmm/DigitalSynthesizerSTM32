@@ -11,7 +11,6 @@
 static void scanPushButtonsInputsForNotes(void);
 static void scanWaveformsSwitches(uint8_t current_mux_channel);
 static void selectWaveformsMuxChannel(uint8_t channel);
-static void scanPotentiometers();
 static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);
 static float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 static float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
@@ -25,23 +24,27 @@ volatile uint8_t currentMuxChannel = 0;
 volatile uint8_t scanUserInputsFlag = 0;
 
 
+void updateSynthParameters(Synthesizer_t* synthesizer){
+	if(scanUserInputsFlag){
+		selectWaveformsMuxChannel(currentMuxChannel);
+		scanPushButtonsInputsForNotes();
+		scanWaveformsSwitches(currentMuxChannel);
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
+
+		// ADC mux master volume
+		synthesizer->osc1Volume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_OSC1_VOL]);
+
+		scanUserInputsFlag = 0;
+	}
+
+}
+
 Waveform_t getUserWaveform(void){
 	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
 	if(userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
 	if(userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;
 	if(userInputs.buttonsState & BTN_OSC1_SQUARE) return SQUARE;
 	return NONE;
-}
-
-void scanUserInputs(){
-	if(scanUserInputsFlag){
-		selectWaveformsMuxChannel(currentMuxChannel);
-		scanPushButtonsInputsForNotes();
-		scanWaveformsSwitches(currentMuxChannel);
-		scanPotentiometers();
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
-		scanUserInputsFlag = 0;
-	}
 }
 
 static void selectWaveformsMuxChannel(uint8_t channel){
@@ -99,11 +102,6 @@ static void scanWaveformsSwitches() {
 		default:
 			break;
 		}
-}
-
-static void scanPotentiometers(){
-	// ADC mux master volume
-	osc1.targetVolume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_OSC1_VOL]);
 }
 
 static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
