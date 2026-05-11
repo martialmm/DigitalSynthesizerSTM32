@@ -14,7 +14,6 @@
 #define NUMBER_OF_FRAMES_PER_HALF 32  // 32 samples (left+right) for each call
 #define TOTAL_BUFFER_SIZE (NUMBER_OF_FRAMES_PER_HALF * 2 * 2) // 32 frames * 2 (L/R) * 2 (halves) = 128 values
 #define LUT_BITS 12
-#define SAMPLE_NUMBER_LUT (1 << LUT_BITS) // can hear a small harmonic distortion for value < 4096 => maybe something to improve
 #define FP_SHIFT_AMOUNT (32 - LUT_BITS)
 
 typedef enum{

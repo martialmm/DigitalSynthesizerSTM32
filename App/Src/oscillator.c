@@ -82,7 +82,7 @@ void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform) {
 void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
 	const float antipopFactor = 0.001f;
-	const float volumeSmoothing = 0.005f;
+	const float volumeSmoothing = 0.001f;
 	uint8_t noteButtonPressed = (userInputs.buttonsState & BTN_LOWER_OCTAVE) || (userInputs.buttonsState & BTN_UPPER_OCTAVE);
 
 	for(uint16_t i = 0; i < num_frames; i++){
