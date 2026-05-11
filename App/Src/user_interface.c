@@ -64,10 +64,10 @@ static void scanPushButtonsInputsForNotes() {
 	}
 }
 
-static void scanWaveformsSwitches(uint8_t current_mux_channel) {
+static void scanWaveformsSwitches() {
 	// Multiplexer scan for waveforms switches
 		GPIO_PinState pinState = HAL_GPIO_ReadPin( MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
-		switch (current_mux_channel) {
+		switch (currentMuxChannel) {
 		case 0:
 			if (pinState)
 				userInputs.buttonsState |= BTN_OSC1_SINUS;
