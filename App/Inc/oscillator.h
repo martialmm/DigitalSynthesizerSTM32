@@ -36,14 +36,12 @@ typedef struct {
     Waveform_t waveform;
 }Oscillator_t;
 
-float processVolumePotentiometer(uint16_t potentiometerRawValue);
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s);
-const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 void startI2SOscillator(I2S_HandleTypeDef* hi2s);
 void initializeSynthesizer();
 void initializeOscillator(Oscillator_t* oscillator);
 void setOscillatorWaveform(Oscillator_t *osc,Waveform_t waveform);
-void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames);
+
 
 extern Oscillator_t osc1;
 

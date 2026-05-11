@@ -10,6 +10,12 @@
 
 static void scanPushButtonsInputsForNotes(void);
 static void scanWaveformsSwitches(uint8_t current_mux_channel);
+static void selectWaveformsMuxChannel(uint8_t channel);
+static void scanPotentiometers();
+static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);
+static float approximateExpFunction(float linearScaledDeadbandPotentiometer);
+static float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
+static float processVolumePotentiometer(uint16_t potentiometerRawValue);
 
 UserInputs_t userInputs;
 TIM_HandleTypeDef* timerForUserInputsScan = NULL;
@@ -27,7 +33,18 @@ Waveform_t getUserWaveform(void){
 	return NONE;
 }
 
-void selectWaveformsMuxChannel(uint8_t channel){
+void scanUserInputs(){
+	if(scanUserInputsFlag){
+		selectWaveformsMuxChannel(currentMuxChannel);
+		scanPushButtonsInputsForNotes();
+		scanWaveformsSwitches(currentMuxChannel);
+		scanPotentiometers();
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
+		scanUserInputsFlag = 0;
+	}
+}
+
+static void selectWaveformsMuxChannel(uint8_t channel){
 	HAL_GPIO_WritePin(S0_All_MUX_GPIO_Port, S0_All_MUX_Pin, (channel & (1 << 0)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(S1_All_MUX_GPIO_Port, S1_All_MUX_Pin, (channel & (1 << 1)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(S2_All_MUX_GPIO_Port, S2_All_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
@@ -84,22 +101,12 @@ static void scanWaveformsSwitches(uint8_t current_mux_channel) {
 		}
 }
 
-void scanPotentiometers(){
+static void scanPotentiometers(){
 	// ADC mux master volume
 	osc1.targetVolume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_OSC1_VOL]);
 }
 
-void scanUserInputs(){
-	if(scanUserInputsFlag){
-		scanPushButtonsInputsForNotes();
-		scanWaveformsSwitches(currentMuxChannel);
-		scanPotentiometers();
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
-		scanUserInputsFlag = 0;
-	}
-}
-
-float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
+static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
 	float linearScaledDeadbandPotentiometer;
 
 	if (potentiometerRawValue < potentiometerDeadband) {
@@ -110,12 +117,12 @@ float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float
 	return linearScaledDeadbandPotentiometer;
 }
 
-float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
+static float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume.
 	return linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
 }
 
-float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
+static float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
 	// Filtering ADC inputs with Exponential Moving Average filter
 	static LowPassFilter_EMA_t lowPassFilterEMA;
 
@@ -126,7 +133,7 @@ float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
 	return lowPassFilterEMA.output;
 }
 
-float processVolumePotentiometer(uint16_t potentiometerRawValue){
+static float processVolumePotentiometer(uint16_t potentiometerRawValue){
 	float filtered = lowPassFilterPotentiometerInput(potentiometerRawValue);
 
 	float normalized = createDeadbandForPotentiometer(filtered, 25.0f);

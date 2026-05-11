@@ -14,6 +14,9 @@
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f
 
+static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames);
+static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
+
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
 Oscillator_t osc1;
 
@@ -21,32 +24,8 @@ I2C_HandleTypeDef* ch_hi2c1 = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;
 
-
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
-}
-
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
-}
-
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
 	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
-}
-
-const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
-	 if(selectedWaveform == SINUS){
-		 return sineLookupTable;
-	 }
-	else if(selectedWaveform == TRIANGLE){
-		return triangleLookupTable;
-	}
-	else if(selectedWaveform == SAWTOOTH){
-		return sawtoothLookupTable;
-	}
-	else{
-		return squareLookupTable;
-	 }
 }
 
 void startI2SOscillator(I2S_HandleTypeDef* hi2s){
@@ -79,7 +58,22 @@ void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform) {
     }
 }
 
-void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
+static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
+	 if(selectedWaveform == SINUS){
+		 return sineLookupTable;
+	 }
+	else if(selectedWaveform == TRIANGLE){
+		return triangleLookupTable;
+	}
+	else if(selectedWaveform == SAWTOOTH){
+		return sawtoothLookupTable;
+	}
+	else{
+		return squareLookupTable;
+	 }
+}
+
+static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
 	float output;
 	const float antipopFactor = 0.001f;
 	const float volumeSmoothing = 0.001f;
@@ -111,4 +105,12 @@ void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_
 
 		oscillator->phase += oscillator->phaseIncrement;
 	}
+}
+
+void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
+	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
+}
+
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
+	feedDMAAudioBuffer(&osc1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
 }
