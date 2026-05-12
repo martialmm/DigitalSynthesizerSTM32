@@ -1,6 +1,9 @@
 #include <string.h>
 #include <stdio.h>
 #include "synthesizerApp.h"
+#include "oscillator.h"
+#include "user_interface.h"
+#include "synthesizer.h"
 
 void synthesizer(){
 
@@ -27,7 +30,7 @@ void synthesizer(){
 
 	while(1){
 		updateSynthParameters(synthesizer, userInterface);
-		updateSynthesizerOscillatorState(synthesizer, oscillator1);
+		updateSynthesizerOscillatorsState(synthesizer);
 
 		Waveform_t selectedWaveform = getUserWaveform();
 		setOscillatorWaveform(oscillator1, selectedWaveform);

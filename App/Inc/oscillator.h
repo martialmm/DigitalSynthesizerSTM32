@@ -28,7 +28,7 @@ void startI2SOscillator(I2S_HandleTypeDef* hi2s);
 void initializeOscillator(Oscillator_t* oscillator);
 
 // SETTERS
-void setOscillatorWaveform(Oscillator_t *osc,Waveform_t waveform);
+void setOscillatorWaveform(Oscillator_t *osc, Waveform_t waveform);
 void setOscillatorFrequency(Oscillator_t* oscillator, float frequency);
 void setOscillatorPhaseIncrement(Oscillator_t* oscillator, uint32_t phaseIncrement);
 void setOscillatorVolume(Oscillator_t* oscillator, float targetVolume);

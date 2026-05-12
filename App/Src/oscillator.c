@@ -9,7 +9,7 @@
 #include "main.h"
 #include "oscillator.h"
 #include "wavetables.h"
-#include "user_interface.h"
+
 
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f

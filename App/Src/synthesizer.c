@@ -12,7 +12,7 @@ ADC_HandleTypeDef* adcForPotentiometers = NULL;
 TIM_HandleTypeDef* timerForUserInputsScan = NULL;
 volatile uint8_t scanUserInputsFlag = 0;
 
-Synthesizer_t* createSynthesizer(void) {
+Synthesizer_t* createSynthesizer() {
     static Synthesizer_t instance = {0};
     return &instance;
 }
@@ -25,8 +25,8 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 	synthesizer->oscillator = oscillator;
 }
 
-void updateSynthesizerOscillatorState(Synthesizer_t* synthesizer, Oscillator_t* oscillator){
-	setOscillatorVolume(oscillator, getOscillatorVolume(synthesizer->oscillator)); //synthesizer->osc1Volume;
+void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
+	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator)); //synthesizer->osc1Volume;
 }
 
 void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
