@@ -24,16 +24,5 @@ void synthesizer(){
 	while(1){
 		updateSynthParameters(synthesizer, userInterface);
 		updateSynthesizerOscillatorsState(synthesizer);
-
-	   // temp for tests
-	   if(userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
-		   setOscillatorFrequency(oscillator, 523.25f);
-		   setOscillatorPhaseIncrement(oscillator, computePhaseIncrement(getOscillatorFrequency(oscillator), i2sForExternalDAC));
-	   }
-
-	   else if(userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
-	   setOscillatorFrequency(oscillator, 783.99f);
-	   setOscillatorPhaseIncrement(oscillator, computePhaseIncrement(getOscillatorFrequency(oscillator), i2sForExternalDAC));
-	   }
 	}
 }

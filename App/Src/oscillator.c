@@ -34,7 +34,6 @@ struct Oscillator {
 };
 
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
-I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;
 
 

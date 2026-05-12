@@ -10,6 +10,7 @@
 
 ADC_HandleTypeDef* adcForPotentiometers = NULL;
 TIM_HandleTypeDef* timerForUserInputsScan = NULL;
+I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 volatile uint8_t scanUserInputsFlag = 0;
 
 Synthesizer_t* createSynthesizer() {
@@ -54,6 +55,22 @@ void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInte
 		noteIsNotPlayed(synthesizer->oscillator);
 	}
 
+
+	// temp for tests
+	float noteFrequency = 0.0f;
+	if(userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
+		noteFrequency = 523.25f;
+		noteIsPlayed(synthesizer->oscillator);
+	}
+	else if(userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
+		noteFrequency = 783.99f;
+		noteIsPlayed(synthesizer->oscillator);
+	}
+	else{
+		noteIsNotPlayed(synthesizer->oscillator);
+	}
+	setOscillatorFrequency(synthesizer->oscillator, noteFrequency);
+	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(getOscillatorFrequency(synthesizer->oscillator), i2sForExternalDAC));
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
