@@ -30,8 +30,11 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 }
 
 void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
+	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
 	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform());
+	setOscillatorFrequency(synthesizer->oscillator, oscillatorFrequency);
+	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 }
 
 void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
@@ -48,29 +51,18 @@ void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInte
 		scanUserInputsFlag = 0;
 	}
 
-	if((userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE) || (userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE)){
-		noteIsPlayed(synthesizer->oscillator);
-	}
-	else{
-		noteIsNotPlayed(synthesizer->oscillator);
-	}
-
-
 	// temp for tests
-	float noteFrequency = 0.0f;
 	if(userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
-		noteFrequency = 523.25f;
+		setOscillatorFrequency(synthesizer->oscillator, 523.25f);
 		noteIsPlayed(synthesizer->oscillator);
 	}
 	else if(userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
-		noteFrequency = 783.99f;
+		setOscillatorFrequency(synthesizer->oscillator, 783.99f);
 		noteIsPlayed(synthesizer->oscillator);
 	}
 	else{
 		noteIsNotPlayed(synthesizer->oscillator);
 	}
-	setOscillatorFrequency(synthesizer->oscillator, noteFrequency);
-	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(getOscillatorFrequency(synthesizer->oscillator), i2sForExternalDAC));
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
