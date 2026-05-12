@@ -12,8 +12,7 @@ void synthesizer(){
 	UserInterface_t* userInterface = createUserInterface();
 
 	// Init phase
-	initializeSynthesizer(synthesizer, oscillator);
-	initUserInterface(userInterface);
+	initializeSynthesizer(synthesizer, oscillator, userInterface);
 
 	// I2S
 	startI2SOscillator(i2sForExternalDAC);
