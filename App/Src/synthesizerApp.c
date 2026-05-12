@@ -21,7 +21,6 @@ void synthesizer(){
 	HAL_TIM_Base_Start_IT(timerForUserInputsScan);
 
 	while(1){
-		updateSynthParameters(synthesizer, userInterface);
-		updateSynthesizerOscillatorsState(synthesizer);
+		synthesizerRun(synthesizer, userInterface);
 	}
 }

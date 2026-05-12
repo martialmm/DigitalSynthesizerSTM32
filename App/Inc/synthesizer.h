@@ -19,6 +19,7 @@ typedef struct {
 Synthesizer_t* createSynthesizer(void);
 void initializeSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface);
 void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator);
+void synthesizerRun(Synthesizer_t* synthesizer, UserInterface_t* userInterface);
 void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer);
 void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface);
 

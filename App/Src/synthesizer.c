@@ -30,6 +30,11 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 	synthesizer->oscillator = oscillator;
 }
 
+void synthesizerRun(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
+	updateSynthParameters(synthesizer, synthesizer->oscillator);
+	updateSynthesizerOscillatorsState(synthesizer);
+}
+
 void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
