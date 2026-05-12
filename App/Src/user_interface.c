@@ -8,100 +8,100 @@
 #include "user_interface.h"
 #include "main.h"
 
-static void scanPushButtonsInputsForNotes(void);
-static void scanWaveformsSwitches(uint8_t current_mux_channel);
-static void selectWaveformsMuxChannel(uint8_t channel);
 static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);
 static float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 static float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
-static float processVolumePotentiometer(uint16_t potentiometerRawValue);
 
-UserInputs_t userInputs;
-TIM_HandleTypeDef* timerForUserInputsScan = NULL;
-ADC_HandleTypeDef* adcForPotentiometers = NULL;
-uint16_t potentiometersADCConversionBuffer[3];
-volatile uint8_t currentMuxChannel = 0;
-volatile uint8_t scanUserInputsFlag = 0;
+static UserInterface_t* userInterface1 = NULL;
 
 
-void updateSynthParameters(Synthesizer_t* synthesizer){
-	if(scanUserInputsFlag){
-		selectWaveformsMuxChannel(currentMuxChannel);
-		scanPushButtonsInputsForNotes();
-		scanWaveformsSwitches(currentMuxChannel);
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)potentiometersADCConversionBuffer, 3);
-
-		// ADC mux master volume
-		synthesizer->osc1Volume = processVolumePotentiometer(userInputs.potentiometersRaw[POT_OSC1_VOL]);
-
-		scanUserInputsFlag = 0;
-	}
-
+void initUserInterface(UserInterface_t* userInterface){
+	userInterface->currentMuxChannel = 0;
 }
 
+void userInterfaceRegister(UserInterface_t* userInterface) {
+	userInterface1 = userInterface;
+}
+
+
+UserInterface_t* createUserInterface(void) {
+    static UserInterface_t instance = {0};
+    return &instance;
+}
+
+
 Waveform_t getUserWaveform(void){
-	if(userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
-	if(userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
-	if(userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;
-	if(userInputs.buttonsState & BTN_OSC1_SQUARE) return SQUARE;
+	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
+	if(userInterface1->userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
+	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;
+	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SQUARE) return SQUARE;
 	return NONE;
 }
 
-static void selectWaveformsMuxChannel(uint8_t channel){
+void selectWaveformsMuxChannel(uint8_t channel){
 	HAL_GPIO_WritePin(S0_All_MUX_GPIO_Port, S0_All_MUX_Pin, (channel & (1 << 0)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(S1_All_MUX_GPIO_Port, S1_All_MUX_Pin, (channel & (1 << 1)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(S2_All_MUX_GPIO_Port, S2_All_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-static void scanPushButtonsInputsForNotes() {
+void scanPushButtonsInputsForNotes() {
 	// Temp Push buttons to trigger sounds
 	if (HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)) {
-		userInputs.buttonsState |= BTN_LOWER_OCTAVE;
+		userInterface1->userInputs.buttonsState |= BTN_LOWER_OCTAVE;
 	} else {
-		userInputs.buttonsState &= ~BTN_LOWER_OCTAVE;
+		userInterface1->userInputs.buttonsState &= ~BTN_LOWER_OCTAVE;
 	}
 	if (HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)) {
-		userInputs.buttonsState |= BTN_UPPER_OCTAVE;
+		userInterface1->userInputs.buttonsState |= BTN_UPPER_OCTAVE;
 	} else {
-		userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
+		userInterface1->userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
 	}
 }
 
-static void scanWaveformsSwitches() {
+void scanWaveformsSwitches() {
 	// Multiplexer scan for waveforms switches
 		GPIO_PinState pinState = HAL_GPIO_ReadPin( MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
-		switch (currentMuxChannel) {
+		switch (userInterface1->currentMuxChannel) {
 		case 0:
 			if (pinState)
-				userInputs.buttonsState |= BTN_OSC1_SINUS;
+				userInterface1->userInputs.buttonsState |= BTN_OSC1_SINUS;
 			else
-				userInputs.buttonsState &= ~BTN_OSC1_SINUS;
+				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_SINUS;
 
 			break;
 		case 1:
 			if (pinState)
-				userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
+				userInterface1->userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
 			else
-				userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
+				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
 
 			break;
 		case 2:
 			if (pinState)
-				userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
+				userInterface1->userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
 			else
-				userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
+				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
 
 			break;
 		case 3:
 			if (pinState)
-				userInputs.buttonsState |= BTN_OSC1_SQUARE;
+				userInterface1->userInputs.buttonsState |= BTN_OSC1_SQUARE;
 			else
-				userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
+				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
 
 			break;
 		default:
 			break;
 		}
+}
+
+float processVolumePotentiometer(uint16_t potentiometerRawValue){
+	float filtered = lowPassFilterPotentiometerInput(potentiometerRawValue);
+
+	float normalized = createDeadbandForPotentiometer(filtered, 25.0f);
+
+	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume
+	return approximateExpFunction(normalized);
 }
 
 static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
@@ -131,30 +131,14 @@ static float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
 	return lowPassFilterEMA.output;
 }
 
-static float processVolumePotentiometer(uint16_t potentiometerRawValue){
-	float filtered = lowPassFilterPotentiometerInput(potentiometerRawValue);
-
-	float normalized = createDeadbandForPotentiometer(filtered, 25.0f);
-
-	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume
-	return approximateExpFunction(normalized);
-}
-
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	// To fill potentiometers values: userInputs.potentiometersRaw --> tab of size 24
 	// Each potentiometer has its own index
 	// I use 3 channels of the ADC because I have 3 mux
-	userInputs.potentiometersRaw[0 * 8 + currentMuxChannel] = potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
-	userInputs.potentiometersRaw[1 * 8 + currentMuxChannel] = potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
-	userInputs.potentiometersRaw[2 * 8 + currentMuxChannel] = potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
+	userInterface1->userInputs.potentiometersRaw[0 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
+	userInterface1->userInputs.potentiometersRaw[1 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
+	userInterface1->userInputs.potentiometersRaw[2 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
 
-	currentMuxChannel++;
-	if(currentMuxChannel >= 8) currentMuxChannel = 0;
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
-	// Periodic timer interrupt for user inputs scan: switches (polling) + potentiometers (adc + dma)
-	if(htim == timerForUserInputsScan){
-		scanUserInputsFlag = 1;
-	}
+	userInterface1->currentMuxChannel++;
+	if(userInterface1->currentMuxChannel >= 8) userInterface1->currentMuxChannel = 0;
 }

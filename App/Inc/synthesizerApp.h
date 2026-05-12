@@ -11,6 +11,7 @@
 #include "stm32f4xx_hal.h"
 #include "oscillator.h"
 #include "user_interface.h"
+#include "synthesizer.h"
 
 extern ADC_HandleTypeDef* adcForPotentiometers;
 extern I2C_HandleTypeDef* ch_hi2c1;

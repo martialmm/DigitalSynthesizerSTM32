@@ -8,12 +8,19 @@
 #ifndef INC_SYNTHESIZER_H_
 #define INC_SYNTHESIZER_H_
 #include "synth_definitions.h"
+#include "oscillator.h"
+#include "user_interface.h"
+
 
 typedef struct {
 	// Oscillators
-	Waveform_t osc1Waveform;
-	float osc1Volume; 		// range: 0.0f 1.0f
-	float osc1Frequency;
+	Oscillator_t* oscillator;
 }Synthesizer_t;
+
+Synthesizer_t* createSynthesizer(void);
+void initializeSynthesizer();
+void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator);
+void updateSynthesizerOscillatorState(Synthesizer_t* synthesizer, Oscillator_t* oscillator);
+void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface);
 
 #endif /* INC_SYNTHESIZER_H_ */

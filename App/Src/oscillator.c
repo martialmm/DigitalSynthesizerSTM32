@@ -30,11 +30,19 @@ struct Oscillator {
     const int16_t* activeLookupTable;
     int8_t detune;
     Waveform_t waveform;
+    uint8_t noteIsPlayed;
 };
 
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;
+
+
+// ---- INITIALIZATION ---- //
+
+void startI2SOscillator(I2S_HandleTypeDef* hi2s){
+	HAL_I2S_Transmit_DMA(hi2s, (uint16_t*) &dmaAudioBuffer, TOTAL_BUFFER_SIZE);
+}
 
 // temp for refactoring
 void oscillatorRegister(Oscillator_t* oscillator) {
@@ -46,18 +54,6 @@ Oscillator_t* createOscillator(void) {
     return &instance;
 }
 
-uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
-	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
-}
-
-void startI2SOscillator(I2S_HandleTypeDef* hi2s){
-	HAL_I2S_Transmit_DMA(hi2s, (uint16_t*) &dmaAudioBuffer, TOTAL_BUFFER_SIZE);
-}
-
-void initializeSynthesizer(){
-	HAL_GPIO_WritePin(Enable_All_MUX_GPIO_Port, Enable_All_MUX_Pin, GPIO_PIN_RESET);
-}
-
 void initializeOscillator(Oscillator_t* oscillator){
 	oscillator->activeLookupTable = sineLookupTable;
 	oscillator->detune = 0;
@@ -67,12 +63,15 @@ void initializeOscillator(Oscillator_t* oscillator){
 	oscillator->phaseIncrement = 0;
 	oscillator->targetVolume = 0.0f;
 	oscillator->waveform = SINUS;
+	oscillator->noteIsPlayed = 0;
 }
 
-void updateSynthesizerOscillatorState(Oscillator_t* oscillator, Synthesizer_t* synthesizer){
-	oscillator->targetVolume = synthesizer->osc1Volume;
-	//oscillator->waveform = synthesizer->osc1Waveform;
+uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
+	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
 }
+
+
+// ---- SETTERS ---- //
 
 void setOscillatorWaveform(Oscillator_t* oscillator, Waveform_t waveform) {
     if (waveform != NONE) {
@@ -93,9 +92,32 @@ void setOscillatorPhaseIncrement(Oscillator_t* oscillator, uint32_t phaseIncreme
 	oscillator->phaseIncrement = phaseIncrement;
 }
 
+void setOscillatorVolume(Oscillator_t* oscillator, float targetVolume){
+	oscillator->targetVolume = targetVolume;
+}
+
+void noteIsPlayed(Oscillator_t* oscillator){
+	oscillator->noteIsPlayed = 1;
+}
+
+void noteIsNotPlayed(Oscillator_t* oscillator){
+	oscillator->noteIsPlayed = 0;
+}
+
+
+
+// ---- GETTERS ---- //
+
 float getOscillatorFrequency(Oscillator_t* oscillator){
 	return oscillator->frequency;
 }
+
+float getOscillatorVolume(Oscillator_t* oscillator){
+	return oscillator->targetVolume;
+}
+
+
+// ---- PRIVATE FUNCTIONS ---- //
 
 static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
 	 if(selectedWaveform == SINUS){
@@ -116,11 +138,10 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 	float output;
 	const float antipopFactor = 0.001f;
 	const float volumeSmoothing = 0.001f;
-	uint8_t noteButtonPressed = (userInputs.buttonsState & BTN_LOWER_OCTAVE) || (userInputs.buttonsState & BTN_UPPER_OCTAVE);
 
 	for(uint16_t i = 0; i < num_frames; i++){
 		oscillator->currentVolume += (oscillator->targetVolume - oscillator->currentVolume) * volumeSmoothing;
-		if(noteButtonPressed){
+		if(oscillator->noteIsPlayed){
 			oscillator->enveloppe += antipopFactor;
 			if(oscillator->enveloppe > 1.0f) oscillator->enveloppe = 1.0f;
 		}

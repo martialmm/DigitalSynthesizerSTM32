@@ -9,7 +9,7 @@
 #define INC_USER_INTERFACE_H_
 
 #include <stdint.h>
-#include <synthesizer.h>
+#include "synth_definitions.h"
 
 // SWITCHES
 #define BTN_OSC1_SINUS		 (1 << 0)
@@ -63,9 +63,25 @@ typedef struct {
 	uint32_t potentiometersFiltered[NUMBER_OF_POTS];
 } UserInputs_t;
 
-Waveform_t getUserWaveform(void);
-void updateSynthParameters(Synthesizer_t* synthesizer);
+typedef struct{
+	UserInputs_t userInputs;
+	uint16_t potentiometersADCConversionBuffer[3];
+	volatile uint8_t currentMuxChannel;
+}UserInterface_t;
 
-extern UserInputs_t userInputs;
+
+//temp for refactoring
+UserInterface_t* createUserInterface(void);
+void userInterfaceRegister(UserInterface_t* userInterface);
+void initUserInterface(UserInterface_t* userInterface);
+
+float processVolumePotentiometer(uint16_t potentiometerRawValue);
+Waveform_t getUserWaveform(void);
+void selectWaveformsMuxChannel(uint8_t channel);
+void scanPushButtonsInputsForNotes(void);
+void scanWaveformsSwitches(void);
+
+
+//extern UserInputs_t userInputs;
 
 #endif /* INC_USER_INTERFACE_H_ */
