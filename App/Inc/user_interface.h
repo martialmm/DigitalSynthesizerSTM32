@@ -9,7 +9,7 @@
 #define INC_USER_INTERFACE_H_
 
 #include <stdint.h>
-#include "synth_params.h"
+#include <synthesizer.h>
 
 // SWITCHES
 #define BTN_OSC1_SINUS		 (1 << 0)

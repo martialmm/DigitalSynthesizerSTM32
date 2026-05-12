@@ -18,11 +18,33 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
-Oscillator_t oscillator1;
+static Oscillator_t* oscillator1 = NULL;
+
+struct Oscillator {
+    float enveloppe;
+    float frequency;
+    float targetVolume;
+    float currentVolume;
+    uint32_t phase;
+    uint32_t phaseIncrement;
+    const int16_t* activeLookupTable;
+    int8_t detune;
+    Waveform_t waveform;
+};
 
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;
+
+// temp for refactoring
+void oscillatorRegister(Oscillator_t* oscillator) {
+	oscillator1 = oscillator;
+}
+
+Oscillator_t* createOscillator(void) {
+    static Oscillator_t instance = {0};
+    return &instance;
+}
 
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
 	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
@@ -61,6 +83,18 @@ void setOscillatorWaveform(Oscillator_t* oscillator, Waveform_t waveform) {
     	oscillator->waveform = NONE;
     	oscillator->activeLookupTable = NULL;
     }
+}
+
+void setOscillatorFrequency(Oscillator_t* oscillator, float frequency){
+	oscillator->frequency = frequency;
+}
+
+void setOscillatorPhaseIncrement(Oscillator_t* oscillator, uint32_t phaseIncrement){
+	oscillator->phaseIncrement = phaseIncrement;
+}
+
+float getOscillatorFrequency(Oscillator_t* oscillator){
+	return oscillator->frequency;
 }
 
 static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform){
@@ -113,9 +147,9 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 }
 
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&oscillator1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
+	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
 }
 
 void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(&oscillator1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
+	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
 }

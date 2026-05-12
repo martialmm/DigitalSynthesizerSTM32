@@ -5,8 +5,8 @@
  *      Author: mars
  */
 
-#ifndef INC_SYNTH_PARAMS_H_
-#define INC_SYNTH_PARAMS_H_
+#ifndef INC_SYNTHESIZER_H_
+#define INC_SYNTHESIZER_H_
 #include "synth_definitions.h"
 
 typedef struct {
@@ -16,4 +16,4 @@ typedef struct {
 	float osc1Frequency;
 }Synthesizer_t;
 
-#endif /* INC_SYNTH_PARAMS_H_ */
+#endif /* INC_SYNTHESIZER_H_ */
