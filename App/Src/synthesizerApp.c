@@ -8,17 +8,11 @@
 void synthesizer(){
 
 	Synthesizer_t* synthesizer = createSynthesizer();
-	Oscillator_t* oscillator1 = createOscillator();
+	Oscillator_t* oscillator = createOscillator();
 	UserInterface_t* userInterface = createUserInterface();
 
-
 	// Init phase
-	initializeSynthesizer();
-
-	initializeOscillator(oscillator1);
-	oscillatorRegister(oscillator1);
-	addOscillatorToSynthesizer(synthesizer, oscillator1);
-
+	initializeSynthesizer(synthesizer, oscillator);
 	initUserInterface(userInterface);
 	userInterfaceRegister(userInterface);
 
@@ -33,17 +27,17 @@ void synthesizer(){
 		updateSynthesizerOscillatorsState(synthesizer);
 
 		Waveform_t selectedWaveform = getUserWaveform();
-		setOscillatorWaveform(oscillator1, selectedWaveform);
+		setOscillatorWaveform(oscillator, selectedWaveform);
 
 	   // temp for tests
 	   if(userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
-		   setOscillatorFrequency(oscillator1, 523.25f);
-		   setOscillatorPhaseIncrement(oscillator1, computePhaseIncrement(getOscillatorFrequency(oscillator1), i2sForExternalDAC));
+		   setOscillatorFrequency(oscillator, 523.25f);
+		   setOscillatorPhaseIncrement(oscillator, computePhaseIncrement(getOscillatorFrequency(oscillator), i2sForExternalDAC));
 	   }
 
 	   else if(userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
-	   setOscillatorFrequency(oscillator1, 783.99f);
-	   setOscillatorPhaseIncrement(oscillator1, computePhaseIncrement(getOscillatorFrequency(oscillator1), i2sForExternalDAC));
+	   setOscillatorFrequency(oscillator, 783.99f);
+	   setOscillatorPhaseIncrement(oscillator, computePhaseIncrement(getOscillatorFrequency(oscillator), i2sForExternalDAC));
 	   }
 	}
 }

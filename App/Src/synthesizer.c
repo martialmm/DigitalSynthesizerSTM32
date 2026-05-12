@@ -17,8 +17,11 @@ Synthesizer_t* createSynthesizer() {
     return &instance;
 }
 
-void initializeSynthesizer(){
+void initializeSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator){
 	HAL_GPIO_WritePin(Enable_All_MUX_GPIO_Port, Enable_All_MUX_Pin, GPIO_PIN_RESET);
+	initializeOscillator(oscillator);
+	oscillatorRegister(oscillator);
+	addOscillatorToSynthesizer(synthesizer, oscillator);
 }
 
 void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator){
@@ -26,7 +29,7 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 }
 
 void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
-	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator)); //synthesizer->osc1Volume;
+	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
 }
 
 void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
