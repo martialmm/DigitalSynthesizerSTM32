@@ -25,9 +25,6 @@ void synthesizer(){
 		updateSynthParameters(synthesizer, userInterface);
 		updateSynthesizerOscillatorsState(synthesizer);
 
-		Waveform_t selectedWaveform = getUserWaveform();
-		setOscillatorWaveform(oscillator, selectedWaveform);
-
 	   // temp for tests
 	   if(userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
 		   setOscillatorFrequency(oscillator, 523.25f);

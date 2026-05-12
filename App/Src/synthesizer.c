@@ -30,6 +30,7 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 
 void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
+	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform());
 }
 
 void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
