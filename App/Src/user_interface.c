@@ -16,6 +16,7 @@ static UserInterface_t* userInterface1 = NULL;
 
 
 void initUserInterface(UserInterface_t* userInterface){
+	userInterfaceRegister(userInterface);
 	userInterface->currentMuxChannel = 0;
 }
 
