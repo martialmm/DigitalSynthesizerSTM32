@@ -57,11 +57,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 // ---- PRIVATE FUNCTION ---- //
 
 static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
-	float targetVolume = processVolumePotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_OSC1_VOL));
+	float oscillatorTargetVolume = processAudioPotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_OSC1_VOL)); // a bouger dans le scan du timer
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 
+	float attackPotentiometer = processAudioPotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_ENV_ATTACK)); // a bouger dans le scan du timer
+	setEnvelopeAttack(synthesizer->envelope, computeAttack(attackPotentiometer)); // pareil
+
 	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform(synthesizer->userInterface));
-	setOscillatorVolume(synthesizer->oscillator, targetVolume);
+	setOscillatorVolume(synthesizer->oscillator, oscillatorTargetVolume * getEnvelopeAttack(synthesizer->envelope));
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 
 	// temp for tests

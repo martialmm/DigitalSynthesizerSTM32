@@ -64,7 +64,7 @@ UserInterface_t* createUserInterface(void);
 void userInterfaceRegister(UserInterface_t* userInterface);
 void initUserInterface(UserInterface_t* userInterface);
 
-float processVolumePotentiometer(uint16_t potentiometerRawValue);
+float processAudioPotentiometer(uint16_t potentiometerRawValue);
 Waveform_t getUserWaveform(UserInterface_t* userInterface);
 void selectWaveformsMuxChannel(uint8_t channel);
 void scanPushButtonsInputsForNotes(UserInterface_t* userInterface);

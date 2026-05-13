@@ -11,10 +11,11 @@
 static Envelope_t* envelope1 = NULL;
 
 struct Envelope{
-	uint16_t attack;
-	uint16_t decay;
-	uint16_t sustain;
-	uint16_t release;
+	float attack;
+	float decay;
+	float sustain;
+	float release;
+	uint8_t gate;
 };
 
 Envelope_t* createEnvelope(void) {
@@ -32,4 +33,16 @@ void initEnvelope(Envelope_t* envelope){
 	envelope->decay = 0;
 	envelope->sustain = 0;
 	envelope->release = 0;
+}
+
+float computeAttack(float attackPotentiometer){
+	return 1.0f;
+}
+
+float getEnvelopeAttack(Envelope_t* envelope){
+	return envelope->attack;
+}
+
+void setEnvelopeAttack(Envelope_t* envelope, float attack){
+	envelope->attack = attack;
 }

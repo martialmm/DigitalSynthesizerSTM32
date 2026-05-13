@@ -21,7 +21,7 @@ static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we mod
 static Oscillator_t* oscillator1 = NULL;
 
 struct Oscillator {
-    float enveloppe;
+    float antiPopEnvelope;
     float frequency;
     float targetVolume;
     float currentVolume;
@@ -57,7 +57,7 @@ void initOscillator(Oscillator_t* oscillator){
 	oscillatorRegister(oscillator);
 	oscillator->activeLookupTable = sineLookupTable;
 	oscillator->detune = 0;
-	oscillator->enveloppe = 0.0f;
+	oscillator->antiPopEnvelope = 0.0f;
 	oscillator->frequency = 0.0f;
 	oscillator->phase = 0;
 	oscillator->phaseIncrement = 0;
@@ -152,16 +152,16 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 	for(uint16_t i = 0; i < num_frames; i++){
 		oscillator->currentVolume += (oscillator->targetVolume - oscillator->currentVolume) * volumeSmoothing;
 		if(oscillator->noteIsPlayed){
-			oscillator->enveloppe += antipopFactor;
-			if(oscillator->enveloppe > 1.0f) oscillator->enveloppe = 1.0f;
+			oscillator->antiPopEnvelope += antipopFactor;
+			if(oscillator->antiPopEnvelope > 1.0f) oscillator->antiPopEnvelope = 1.0f;
 		}
 		else{
-			oscillator->enveloppe -= antipopFactor;
-			if (oscillator->enveloppe < 0.0f) oscillator->enveloppe = 0.0f;
+			oscillator->antiPopEnvelope -= antipopFactor;
+			if (oscillator->antiPopEnvelope < 0.0f) oscillator->antiPopEnvelope = 0.0f;
 		}
 
         if(oscillator->activeLookupTable != NULL) {
-            output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->enveloppe * oscillator->currentVolume;
+            output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->antiPopEnvelope * oscillator->currentVolume;
         } else {
             output = 0.0f;
         }

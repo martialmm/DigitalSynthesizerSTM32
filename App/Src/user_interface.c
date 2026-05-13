@@ -131,9 +131,8 @@ void scanWaveformsSwitches(UserInterface_t* userInterface) {
 		}
 }
 
-float processVolumePotentiometer(uint16_t potentiometerRawValue){
+float processAudioPotentiometer(uint16_t potentiometerRawValue){
 	float filtered = lowPassFilterPotentiometerInput(potentiometerRawValue);
-
 	float normalized = createDeadbandForPotentiometer(filtered, 25.0f);
 
 	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume
