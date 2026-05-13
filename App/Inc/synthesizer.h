@@ -9,16 +9,18 @@
 #define INC_SYNTHESIZER_H_
 #include "oscillator.h"
 #include "user_interface.h"
+#include "envelope.h"
 
 
 typedef struct {
 	// Oscillators
 	Oscillator_t* oscillator;
 	UserInterface_t* userInterface;
+	Envelope_t* envelope;
 }Synthesizer_t;
 
 Synthesizer_t* createSynthesizer(void);
-void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface);
+void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface, Envelope_t* envelope);
 void synthesizerRun(Synthesizer_t* synthesizer);
 
 #endif /* INC_SYNTHESIZER_H_ */

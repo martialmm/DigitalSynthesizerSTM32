@@ -10,9 +10,10 @@ void synthesizer(){
 	Synthesizer_t* synthesizer = createSynthesizer();
 	Oscillator_t* oscillator = createOscillator();
 	UserInterface_t* userInterface = createUserInterface();
+	Envelope_t* envelope = createEnvelope();
 
 	// Init phase
-	initSynthesizer(synthesizer, oscillator, userInterface);
+	initSynthesizer(synthesizer, oscillator, userInterface, envelope);
 
 	// I2S
 	startI2SOscillator(i2sForExternalDAC);
