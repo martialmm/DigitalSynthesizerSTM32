@@ -57,26 +57,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 // ---- PRIVATE FUNCTION ---- //
 
 static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
+	float targetVolume = processVolumePotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_OSC1_VOL));
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
-	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
+
 	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform(synthesizer->userInterface));
-	setOscillatorFrequency(synthesizer->oscillator, oscillatorFrequency);
+	setOscillatorVolume(synthesizer->oscillator, targetVolume);
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
-}
-
-static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
-	if(scanUserInputsFlag){
-		selectWaveformsMuxChannel(getCurrentMuxChannelSelected(synthesizer->userInterface));
-		scanPushButtonsInputsForNotes(synthesizer->userInterface);
-		scanWaveformsSwitches(synthesizer->userInterface);
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);
-
-		// ADC mux master volume
-		float targetVolume = processVolumePotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_OSC1_VOL));
-		setOscillatorVolume(synthesizer->oscillator, targetVolume);
-
-		scanUserInputsFlag = 0;
-	}
 
 	// temp for tests
 	if(getButtonsState(synthesizer->userInterface) & BTN_LOWER_OCTAVE){
@@ -89,5 +75,15 @@ static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 	}
 	else{
 		noteIsNotPlayed(synthesizer->oscillator);
+	}
+}
+
+static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
+	if(scanUserInputsFlag){
+		selectWaveformsMuxChannel(getCurrentMuxChannelSelected(synthesizer->userInterface));
+		scanPushButtonsInputsForNotes(synthesizer->userInterface);
+		scanWaveformsSwitches(synthesizer->userInterface);
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);
+		scanUserInputsFlag = 0;
 	}
 }
