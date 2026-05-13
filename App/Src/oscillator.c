@@ -65,11 +65,6 @@ void initOscillator(Oscillator_t* oscillator){
 	oscillator->noteIsPlayed = 0;
 }
 
-uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
-	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
-}
-
-
 // ---- SETTERS ---- //
 
 void setOscillatorWaveform(Oscillator_t* oscillator, Waveform_t waveform) {
@@ -113,6 +108,21 @@ float getOscillatorFrequency(Oscillator_t* oscillator){
 
 float getOscillatorVolume(Oscillator_t* oscillator){
 	return oscillator->targetVolume;
+}
+
+
+// ---- PUBLIC FUNCTIONS ---- //
+
+uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s){
+	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
+}
+
+void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
+	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
+}
+
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
+	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
 }
 
 
@@ -164,12 +174,4 @@ static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16
 
 		oscillator->phase += oscillator->phaseIncrement;
 	}
-}
-
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
-}
-
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
 }

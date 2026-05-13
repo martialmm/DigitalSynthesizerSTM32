@@ -70,7 +70,6 @@ typedef struct{
 }UserInterface_t;
 
 
-//temp for refactoring
 UserInterface_t* createUserInterface(void);
 void userInterfaceRegister(UserInterface_t* userInterface);
 void initUserInterface(UserInterface_t* userInterface);

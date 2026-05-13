@@ -19,10 +19,8 @@
 
 typedef struct Oscillator Oscillator_t;
 
-//temp for refactoring
 void oscillatorRegister(Oscillator_t* oscillator);
 Oscillator_t* createOscillator(void);
-
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s);
 void startI2SOscillator(I2S_HandleTypeDef* hi2s);
 void initOscillator(Oscillator_t* oscillator);

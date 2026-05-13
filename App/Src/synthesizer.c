@@ -13,6 +13,8 @@ TIM_HandleTypeDef* timerForUserInputsScan = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 volatile uint8_t scanUserInputsFlag = 0;
 
+// ---- INITIALIZATION ---- //
+
 Synthesizer_t* createSynthesizer() {
     static Synthesizer_t instance = {0};
     return &instance;
@@ -25,6 +27,9 @@ void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserI
 	addOscillatorToSynthesizer(synthesizer, oscillator);
 	initUserInterface(userInterface);
 }
+
+
+// ---- PUBLIC FUNCTION ---- //
 
 void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator){
 	synthesizer->oscillator = oscillator;

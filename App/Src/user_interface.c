@@ -15,6 +15,8 @@ static float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotent
 static UserInterface_t* userInterface1 = NULL;
 
 
+// ---- INITIALIZATION ---- //
+
 void initUserInterface(UserInterface_t* userInterface){
 	userInterfaceRegister(userInterface);
 	userInterface->currentMuxChannel = 0;
@@ -30,6 +32,8 @@ UserInterface_t* createUserInterface(void) {
     return &instance;
 }
 
+
+// ---- PUBLIC FUNCTIONS ---- //
 
 Waveform_t getUserWaveform(){
 	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
@@ -105,6 +109,21 @@ float processVolumePotentiometer(uint16_t potentiometerRawValue){
 	return approximateExpFunction(normalized);
 }
 
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	// To fill potentiometers values: userInputs.potentiometersRaw --> tab of size 24
+	// Each potentiometer has its own index
+	// I use 3 channels of the ADC because I have 3 mux
+	userInterface1->userInputs.potentiometersRaw[0 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
+	userInterface1->userInputs.potentiometersRaw[1 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
+	userInterface1->userInputs.potentiometersRaw[2 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
+
+	userInterface1->currentMuxChannel++;
+	if(userInterface1->currentMuxChannel >= 8) userInterface1->currentMuxChannel = 0;
+}
+
+
+// ---- PRIVATE FUNCTIONS ---- //
+
 static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
 	float linearScaledDeadbandPotentiometer;
 
@@ -130,16 +149,4 @@ static float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
 
 	lowPassFilterEMA.output = lowPassFilterEMA.alpha * potentiometerValue + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
 	return lowPassFilterEMA.output;
-}
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-	// To fill potentiometers values: userInputs.potentiometersRaw --> tab of size 24
-	// Each potentiometer has its own index
-	// I use 3 channels of the ADC because I have 3 mux
-	userInterface1->userInputs.potentiometersRaw[0 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
-	userInterface1->userInputs.potentiometersRaw[1 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
-	userInterface1->userInputs.potentiometersRaw[2 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
-
-	userInterface1->currentMuxChannel++;
-	if(userInterface1->currentMuxChannel >= 8) userInterface1->currentMuxChannel = 0;
 }
