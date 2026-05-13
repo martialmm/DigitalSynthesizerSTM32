@@ -50,24 +50,24 @@ void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 
 void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 	if(scanUserInputsFlag){
-		selectWaveformsMuxChannel(synthesizer->userInterface->currentMuxChannel);
+		selectWaveformsMuxChannel(getCurrentMuxChannelSelected(synthesizer->userInterface));
 		scanPushButtonsInputsForNotes();
 		scanWaveformsSwitches();
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)synthesizer->userInterface->potentiometersADCConversionBuffer, 3);
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);
 
 		// ADC mux master volume
-		float targetVolume = processVolumePotentiometer(synthesizer->userInterface->userInputs.potentiometersRaw[POT_OSC1_VOL]);
+		float targetVolume = processVolumePotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_OSC1_VOL));
 		setOscillatorVolume(synthesizer->oscillator, targetVolume);
 
 		scanUserInputsFlag = 0;
 	}
 
 	// temp for tests
-	if(synthesizer->userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
+	if(getButtonsState(synthesizer->userInterface) & BTN_LOWER_OCTAVE){
 		setOscillatorFrequency(synthesizer->oscillator, 523.25f);
 		noteIsPlayed(synthesizer->oscillator);
 	}
-	else if(synthesizer->userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
+	else if(getButtonsState(synthesizer->userInterface) & BTN_UPPER_OCTAVE){
 		setOscillatorFrequency(synthesizer->oscillator, 783.99f);
 		noteIsPlayed(synthesizer->oscillator);
 	}

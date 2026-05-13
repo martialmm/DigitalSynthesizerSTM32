@@ -12,6 +12,18 @@ static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, cons
 static float approximateExpFunction(float linearScaledDeadbandPotentiometer);
 static float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
 
+typedef struct {
+	uint32_t buttonsState;
+	uint32_t potentiometersRaw[NUMBER_OF_POTS];
+	uint32_t potentiometersFiltered[NUMBER_OF_POTS];
+} UserInputs_t;
+
+struct UserInterface{
+	UserInputs_t userInputs;
+	uint16_t potentiometersADCConversionBuffer[3];
+	volatile uint8_t currentMuxChannelSelected;
+};
+
 static UserInterface_t* userInterface1 = NULL;
 
 
@@ -19,7 +31,7 @@ static UserInterface_t* userInterface1 = NULL;
 
 void initUserInterface(UserInterface_t* userInterface){
 	userInterfaceRegister(userInterface);
-	userInterface->currentMuxChannel = 0;
+	userInterface->currentMuxChannelSelected = 0;
 }
 
 void userInterfaceRegister(UserInterface_t* userInterface) {
@@ -30,6 +42,25 @@ void userInterfaceRegister(UserInterface_t* userInterface) {
 UserInterface_t* createUserInterface(void) {
     static UserInterface_t instance = {0};
     return &instance;
+}
+
+
+// ---- GETTER ---- //
+
+volatile uint8_t getCurrentMuxChannelSelected(UserInterface_t* userInterface){
+	return userInterface->currentMuxChannelSelected;
+}
+
+uint16_t* getPotentiometersADCConversionBuffer(UserInterface_t* userInterface){
+	return userInterface->potentiometersADCConversionBuffer;
+}
+
+uint32_t getPotentiometerRaw(UserInterface_t* userInterface, uint8_t potentiometerToRead){
+	return userInterface->userInputs.potentiometersRaw[potentiometerToRead];
+}
+
+uint32_t getButtonsState(UserInterface_t* userInterface){
+	return userInterface->userInputs.buttonsState;
 }
 
 
@@ -66,7 +97,7 @@ void scanPushButtonsInputsForNotes() {
 void scanWaveformsSwitches() {
 	// Multiplexer scan for waveforms switches
 		GPIO_PinState pinState = HAL_GPIO_ReadPin( MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
-		switch (userInterface1->currentMuxChannel) {
+		switch (userInterface1->currentMuxChannelSelected) {
 		case 0:
 			if (pinState)
 				userInterface1->userInputs.buttonsState |= BTN_OSC1_SINUS;
@@ -113,12 +144,12 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	// To fill potentiometers values: userInputs.potentiometersRaw --> tab of size 24
 	// Each potentiometer has its own index
 	// I use 3 channels of the ADC because I have 3 mux
-	userInterface1->userInputs.potentiometersRaw[0 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
-	userInterface1->userInputs.potentiometersRaw[1 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
-	userInterface1->userInputs.potentiometersRaw[2 * 8 + userInterface1->currentMuxChannel] = userInterface1->potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
+	userInterface1->userInputs.potentiometersRaw[0 * 8 + userInterface1->currentMuxChannelSelected] = userInterface1->potentiometersADCConversionBuffer[0];	// fill 0..7 indexes
+	userInterface1->userInputs.potentiometersRaw[1 * 8 + userInterface1->currentMuxChannelSelected] = userInterface1->potentiometersADCConversionBuffer[1]; // fill 8..15 indexes
+	userInterface1->userInputs.potentiometersRaw[2 * 8 + userInterface1->currentMuxChannelSelected] = userInterface1->potentiometersADCConversionBuffer[2]; // fill 16..23 indexes
 
-	userInterface1->currentMuxChannel++;
-	if(userInterface1->currentMuxChannel >= 8) userInterface1->currentMuxChannel = 0;
+	userInterface1->currentMuxChannelSelected++;
+	if(userInterface1->currentMuxChannelSelected >= 8) userInterface1->currentMuxChannelSelected = 0;
 }
 
 

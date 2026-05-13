@@ -57,18 +57,8 @@ typedef struct {
 	float output;
 } LowPassFilter_EMA_t;
 
-typedef struct {
-	uint32_t buttonsState;
-	uint32_t potentiometersRaw[NUMBER_OF_POTS];
-	uint32_t potentiometersFiltered[NUMBER_OF_POTS];
-} UserInputs_t;
 
-typedef struct{
-	UserInputs_t userInputs;
-	uint16_t potentiometersADCConversionBuffer[3];
-	volatile uint8_t currentMuxChannel;
-}UserInterface_t;
-
+typedef struct UserInterface UserInterface_t;
 
 UserInterface_t* createUserInterface(void);
 void userInterfaceRegister(UserInterface_t* userInterface);
@@ -81,6 +71,11 @@ void scanPushButtonsInputsForNotes(void);
 void scanWaveformsSwitches(void);
 
 
-//extern UserInputs_t userInputs;
+// GETTERS
+uint32_t getPotentiometerRaw(UserInterface_t* userInterface, uint8_t potentiometerToRead);
+uint32_t getButtonsState(UserInterface_t* userInterface);
+volatile uint8_t getCurrentMuxChannelSelected(UserInterface_t* userInterface);
+uint16_t* getPotentiometersADCConversionBuffer(UserInterface_t* userInterface);
+
 
 #endif /* INC_USER_INTERFACE_H_ */
