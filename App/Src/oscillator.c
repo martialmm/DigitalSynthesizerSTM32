@@ -54,6 +54,7 @@ Oscillator_t* createOscillator(void) {
 }
 
 void initOscillator(Oscillator_t* oscillator){
+	oscillatorRegister(oscillator);
 	oscillator->activeLookupTable = sineLookupTable;
 	oscillator->detune = 0;
 	oscillator->enveloppe = 0.0f;
