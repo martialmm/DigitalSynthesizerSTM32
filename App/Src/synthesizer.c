@@ -58,7 +58,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
-	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform());
+	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform(synthesizer->userInterface));
 	setOscillatorFrequency(synthesizer->oscillator, oscillatorFrequency);
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 }
@@ -66,8 +66,8 @@ static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 	if(scanUserInputsFlag){
 		selectWaveformsMuxChannel(getCurrentMuxChannelSelected(synthesizer->userInterface));
-		scanPushButtonsInputsForNotes();
-		scanWaveformsSwitches();
+		scanPushButtonsInputsForNotes(synthesizer->userInterface);
+		scanWaveformsSwitches(synthesizer->userInterface);
 		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);
 
 		// ADC mux master volume

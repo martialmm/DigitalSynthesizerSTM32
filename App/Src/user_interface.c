@@ -66,11 +66,11 @@ uint32_t getButtonsState(UserInterface_t* userInterface){
 
 // ---- PUBLIC FUNCTIONS ---- //
 
-Waveform_t getUserWaveform(){
-	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
-	if(userInterface1->userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
-	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;
-	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SQUARE) return SQUARE;
+Waveform_t getUserWaveform(UserInterface_t* userInterface){
+	if(userInterface->userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
+	if(userInterface->userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
+	if(userInterface->userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;
+	if(userInterface->userInputs.buttonsState & BTN_OSC1_SQUARE) return SQUARE;
 	return NONE;
 }
 
@@ -80,50 +80,50 @@ void selectWaveformsMuxChannel(uint8_t channel){
 	HAL_GPIO_WritePin(S2_All_MUX_GPIO_Port, S2_All_MUX_Pin, (channel & (1 << 2)) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-void scanPushButtonsInputsForNotes() {
+void scanPushButtonsInputsForNotes(UserInterface_t* userInterface) {
 	// Temp Push buttons to trigger sounds
 	if (HAL_GPIO_ReadPin(bLowerOctave_GPIO_Port, bLowerOctave_Pin)) {
-		userInterface1->userInputs.buttonsState |= BTN_LOWER_OCTAVE;
+		userInterface->userInputs.buttonsState |= BTN_LOWER_OCTAVE;
 	} else {
-		userInterface1->userInputs.buttonsState &= ~BTN_LOWER_OCTAVE;
+		userInterface->userInputs.buttonsState &= ~BTN_LOWER_OCTAVE;
 	}
 	if (HAL_GPIO_ReadPin(bUpperOctave_GPIO_Port, bUpperOctave_Pin)) {
-		userInterface1->userInputs.buttonsState |= BTN_UPPER_OCTAVE;
+		userInterface->userInputs.buttonsState |= BTN_UPPER_OCTAVE;
 	} else {
-		userInterface1->userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
+		userInterface->userInputs.buttonsState &= ~BTN_UPPER_OCTAVE;
 	}
 }
 
-void scanWaveformsSwitches() {
+void scanWaveformsSwitches(UserInterface_t* userInterface) {
 	// Multiplexer scan for waveforms switches
 		GPIO_PinState pinState = HAL_GPIO_ReadPin( MUX_Switch_Waveforms_GPIO_Port, MUX_Switch_Waveforms_Pin);
-		switch (userInterface1->currentMuxChannelSelected) {
+		switch (userInterface->currentMuxChannelSelected) {
 		case 0:
 			if (pinState)
-				userInterface1->userInputs.buttonsState |= BTN_OSC1_SINUS;
+				userInterface->userInputs.buttonsState |= BTN_OSC1_SINUS;
 			else
-				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_SINUS;
+				userInterface->userInputs.buttonsState &= ~BTN_OSC1_SINUS;
 
 			break;
 		case 1:
 			if (pinState)
-				userInterface1->userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
+				userInterface->userInputs.buttonsState |= BTN_OSC1_TRIANGLE;
 			else
-				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
+				userInterface->userInputs.buttonsState &= ~BTN_OSC1_TRIANGLE;
 
 			break;
 		case 2:
 			if (pinState)
-				userInterface1->userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
+				userInterface->userInputs.buttonsState |= BTN_OSC1_SAWTOOTH;
 			else
-				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
+				userInterface->userInputs.buttonsState &= ~BTN_OSC1_SAWTOOTH;
 
 			break;
 		case 3:
 			if (pinState)
-				userInterface1->userInputs.buttonsState |= BTN_OSC1_SQUARE;
+				userInterface->userInputs.buttonsState |= BTN_OSC1_SQUARE;
 			else
-				userInterface1->userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
+				userInterface->userInputs.buttonsState &= ~BTN_OSC1_SQUARE;
 
 			break;
 		default:

@@ -65,10 +65,10 @@ void userInterfaceRegister(UserInterface_t* userInterface);
 void initUserInterface(UserInterface_t* userInterface);
 
 float processVolumePotentiometer(uint16_t potentiometerRawValue);
-Waveform_t getUserWaveform(void);
+Waveform_t getUserWaveform(UserInterface_t* userInterface);
 void selectWaveformsMuxChannel(uint8_t channel);
-void scanPushButtonsInputsForNotes(void);
-void scanWaveformsSwitches(void);
+void scanPushButtonsInputsForNotes(UserInterface_t* userInterface);
+void scanWaveformsSwitches(UserInterface_t* userInterface);
 
 
 // GETTERS
