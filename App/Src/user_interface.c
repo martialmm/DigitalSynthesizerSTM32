@@ -31,7 +31,7 @@ UserInterface_t* createUserInterface(void) {
 }
 
 
-Waveform_t getUserWaveform(void){
+Waveform_t getUserWaveform(){
 	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SINUS) return SINUS;
 	if(userInterface1->userInputs.buttonsState & BTN_OSC1_TRIANGLE) return TRIANGLE;
 	if(userInterface1->userInputs.buttonsState & BTN_OSC1_SAWTOOTH) return SAWTOOTH;

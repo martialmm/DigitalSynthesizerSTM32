@@ -29,8 +29,8 @@ struct Oscillator {
     uint32_t phaseIncrement;
     const int16_t* activeLookupTable;
     int8_t detune;
-    Waveform_t waveform;
     uint8_t noteIsPlayed;
+    Waveform_t waveform;
 };
 
 I2C_HandleTypeDef* ch_hi2c1 = NULL;
@@ -53,7 +53,7 @@ Oscillator_t* createOscillator(void) {
     return &instance;
 }
 
-void initializeOscillator(Oscillator_t* oscillator){
+void initOscillator(Oscillator_t* oscillator){
 	oscillator->activeLookupTable = sineLookupTable;
 	oscillator->detune = 0;
 	oscillator->enveloppe = 0.0f;

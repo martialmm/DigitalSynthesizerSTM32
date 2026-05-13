@@ -18,9 +18,9 @@ Synthesizer_t* createSynthesizer() {
     return &instance;
 }
 
-void initializeSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface){
+void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface){
 	HAL_GPIO_WritePin(Enable_All_MUX_GPIO_Port, Enable_All_MUX_Pin, GPIO_PIN_RESET);
-	initializeOscillator(oscillator);
+	initOscillator(oscillator);
 	oscillatorRegister(oscillator);
 	addOscillatorToSynthesizer(synthesizer, oscillator);
 	initUserInterface(userInterface);
@@ -31,7 +31,7 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 }
 
 void synthesizerRun(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
-	updateSynthParameters(synthesizer, userInterface);
+	updateSynthesizerParameters(synthesizer, userInterface);
 	updateSynthesizerOscillatorsState(synthesizer);
 }
 
@@ -43,7 +43,7 @@ void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 }
 
-void updateSynthParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
+void updateSynthesizerParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
 	if(scanUserInputsFlag){
 		selectWaveformsMuxChannel(userInterface->currentMuxChannel);
 		scanPushButtonsInputsForNotes();
