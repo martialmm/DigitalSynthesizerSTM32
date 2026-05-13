@@ -22,21 +22,21 @@ Synthesizer_t* createSynthesizer() {
 
 void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface){
 	HAL_GPIO_WritePin(Enable_All_MUX_GPIO_Port, Enable_All_MUX_Pin, GPIO_PIN_RESET);
+
 	initOscillator(oscillator);
 	oscillatorRegister(oscillator);
-	addOscillatorToSynthesizer(synthesizer, oscillator);
+	synthesizer->oscillator = oscillator;
+
 	initUserInterface(userInterface);
+	synthesizer->userInterface = userInterface;
+
 }
 
 
 // ---- PUBLIC FUNCTION ---- //
 
-void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator){
-	synthesizer->oscillator = oscillator;
-}
-
-void synthesizerRun(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
-	updateSynthesizerParameters(synthesizer, userInterface);
+void synthesizerRun(Synthesizer_t* synthesizer){
+	updateSynthesizerParameters(synthesizer);
 	updateSynthesizerOscillatorsState(synthesizer);
 }
 
@@ -48,26 +48,26 @@ void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 }
 
-void updateSynthesizerParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
+void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 	if(scanUserInputsFlag){
-		selectWaveformsMuxChannel(userInterface->currentMuxChannel);
+		selectWaveformsMuxChannel(synthesizer->userInterface->currentMuxChannel);
 		scanPushButtonsInputsForNotes();
 		scanWaveformsSwitches();
-		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)userInterface->potentiometersADCConversionBuffer, 3);
+		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)synthesizer->userInterface->potentiometersADCConversionBuffer, 3);
 
 		// ADC mux master volume
-		float targetVolume = processVolumePotentiometer(userInterface->userInputs.potentiometersRaw[POT_OSC1_VOL]);
+		float targetVolume = processVolumePotentiometer(synthesizer->userInterface->userInputs.potentiometersRaw[POT_OSC1_VOL]);
 		setOscillatorVolume(synthesizer->oscillator, targetVolume);
 
 		scanUserInputsFlag = 0;
 	}
 
 	// temp for tests
-	if(userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
+	if(synthesizer->userInterface->userInputs.buttonsState & BTN_LOWER_OCTAVE){
 		setOscillatorFrequency(synthesizer->oscillator, 523.25f);
 		noteIsPlayed(synthesizer->oscillator);
 	}
-	else if(userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
+	else if(synthesizer->userInterface->userInputs.buttonsState & BTN_UPPER_OCTAVE){
 		setOscillatorFrequency(synthesizer->oscillator, 783.99f);
 		noteIsPlayed(synthesizer->oscillator);
 	}

@@ -14,13 +14,14 @@
 typedef struct {
 	// Oscillators
 	Oscillator_t* oscillator;
+	UserInterface_t* userInterface;
 }Synthesizer_t;
 
 Synthesizer_t* createSynthesizer(void);
 void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserInterface_t* userInterface);
 void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator);
-void synthesizerRun(Synthesizer_t* synthesizer, UserInterface_t* userInterface);
+void synthesizerRun(Synthesizer_t* synthesizer);
 void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer);
-void updateSynthesizerParameters(Synthesizer_t* synthesizer, UserInterface_t* userInterface);
+void updateSynthesizerParameters(Synthesizer_t* synthesizer);
 
 #endif /* INC_SYNTHESIZER_H_ */
