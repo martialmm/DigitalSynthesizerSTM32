@@ -31,7 +31,7 @@ void addOscillatorToSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscill
 }
 
 void synthesizerRun(Synthesizer_t* synthesizer, UserInterface_t* userInterface){
-	updateSynthParameters(synthesizer, synthesizer->oscillator);
+	updateSynthParameters(synthesizer, userInterface);
 	updateSynthesizerOscillatorsState(synthesizer);
 }
 
