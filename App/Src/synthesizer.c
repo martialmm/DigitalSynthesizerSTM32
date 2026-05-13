@@ -8,10 +8,15 @@
 #include "synthesizer.h"
 #include "main.h"
 
+static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer);
+static void updateSynthesizerParameters(Synthesizer_t* synthesizer);
+
+
 ADC_HandleTypeDef* adcForPotentiometers = NULL;
 TIM_HandleTypeDef* timerForUserInputsScan = NULL;
 I2S_HandleTypeDef* i2sForExternalDAC = NULL;
 volatile uint8_t scanUserInputsFlag = 0;
+
 
 // ---- INITIALIZATION ---- //
 
@@ -40,7 +45,17 @@ void synthesizerRun(Synthesizer_t* synthesizer){
 	updateSynthesizerOscillatorsState(synthesizer);
 }
 
-void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
+	// Periodic timer interrupt for user inputs scan: switches (polling) + potentiometers (adc + dma)
+	if(htim == timerForUserInputsScan){
+		scanUserInputsFlag = 1;
+	}
+}
+
+
+// ---- PRIVATE FUNCTION ---- //
+
+static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 	setOscillatorVolume(synthesizer->oscillator, getOscillatorVolume(synthesizer->oscillator));
 	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform());
@@ -48,7 +63,7 @@ void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 }
 
-void updateSynthesizerParameters(Synthesizer_t* synthesizer){
+static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 	if(scanUserInputsFlag){
 		selectWaveformsMuxChannel(getCurrentMuxChannelSelected(synthesizer->userInterface));
 		scanPushButtonsInputsForNotes();
@@ -73,12 +88,5 @@ void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 	}
 	else{
 		noteIsNotPlayed(synthesizer->oscillator);
-	}
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
-	// Periodic timer interrupt for user inputs scan: switches (polling) + potentiometers (adc + dma)
-	if(htim == timerForUserInputsScan){
-		scanUserInputsFlag = 1;
 	}
 }
