@@ -9,9 +9,11 @@
 #include "main.h"
 
 static Envelope_t* envelope1 = NULL;
+static void computeAttack(Envelope_t* envelope, float attackPotentiometer);
 
 struct Envelope{
 	float attack;
+	float attackRate;
 	float decay;
 	float sustain;
 	float release;
@@ -30,19 +32,34 @@ void envelopeRegister(Envelope_t* envelope) {
 void initEnvelope(Envelope_t* envelope){
 	envelopeRegister(envelope);
 	envelope->attack = 0;
+	envelope->attackRate = 0;
 	envelope->decay = 0;
 	envelope->sustain = 0;
 	envelope->release = 0;
 }
 
-float computeAttack(float attackPotentiometer){
-	return 1.0f;
+static void computeAttack(Envelope_t* envelope, float attackPotentiometer){ // pas terrible tout ça
+	envelope->attackRate = 0.00001f;
+	if(envelope->attack > 1.0f){
+		envelope->attack = 1.0f;
+		return;
+	}
+	if(envelope->gate){
+		envelope->attack += envelope->attackRate;
+	}
+	else{
+		envelope->attack = 0;
+	}
 }
 
 float getEnvelopeAttack(Envelope_t* envelope){
 	return envelope->attack;
 }
 
-void setEnvelopeAttack(Envelope_t* envelope, float attack){
-	envelope->attack = attack;
+void setEnvelopeAttack(Envelope_t* envelope, float attackPotentiometer){
+	computeAttack(envelope, attackPotentiometer);
+}
+
+void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate){
+	envelope->gate = wantedGateSate;
 }
