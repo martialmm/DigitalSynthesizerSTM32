@@ -8,7 +8,7 @@ The device is designed as a desktop module (no built-in keyboard) and is control
 - Core Architecture: Bare-metal C development, ARM Cortex-M4 (STM32).
 - Audio & DSP:  wave generation, digital filters, audio effects algorithms.
 - Peripherals & Hardware: DMA, Timers, ADC, DAC.
-- Protocols: I2S (Audio), I2C, SPI.
+- Protocols: I2S (Audio), I2C, SPI, MIDI.
 - Drivers: Custom drivers for External Audio DAC & LCD/RGB Displays.
 
 ## Development Status
