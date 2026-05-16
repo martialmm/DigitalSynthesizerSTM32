@@ -4,9 +4,16 @@ This project aims to develop a basic 8-voices polyphonic digital synthesizer. It
 
 The device is designed as a desktop module (no built-in keyboard) and is controlled via an external USB MIDI keyboard.
 
+## Technical Stack
+- Core Architecture: Bare-metal C development, ARM Cortex-M4 (STM32).
+- Audio & DSP:  wave generation, digital filters, audio effects algorithms.
+- Peripherals & Hardware: DMA, Timers, ADC, DAC.
+- Protocols: I2S (Audio), I2C, SPI.
+- Drivers: Custom drivers for External Audio DAC & LCD/RGB Displays.
+
 ## Development Status
 - Current Phase: Breadboard prototyping and functional validation.
-- Hardware: Initial development with STM32F407 Discovery Board and later updated with a STM32F411.
+- Hardware: Initial development with STM32F407 Discovery Board and now updated with a STM32F401.
 - Future Goal: Custom PCB design for a standalone unit.
 
 ## Features
