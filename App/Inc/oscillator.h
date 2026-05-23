@@ -19,22 +19,24 @@
 
 typedef struct Oscillator Oscillator_t;
 
-void oscillatorRegister(Oscillator_t* oscillator);
 Oscillator_t* createOscillator(void);
 uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2s);
-void startI2SOscillator(I2S_HandleTypeDef* hi2s);
 void initOscillator(Oscillator_t* oscillator);
+float getNextOscillatorSample(Oscillator_t* oscillator);
 
 // SETTERS
 void setOscillatorWaveform(Oscillator_t *oscillator, Waveform_t waveform);
 void setOscillatorFrequency(Oscillator_t* oscillator, float frequency);
 void setOscillatorPhaseIncrement(Oscillator_t* oscillator, uint32_t phaseIncrement);
-void setOscillatorVolume(Oscillator_t* oscillator, float targetVolume);
+void setOscillatorTargetVolume(Oscillator_t* oscillator, float targetVolume);
+void setOscillatorCurrentvolume(Oscillator_t* oscillator, float currentVolume);
 void noteIsPlayed(Oscillator_t* oscillator);
 void noteIsNotPlayed(Oscillator_t* oscillator);
 
 // GETTERS
 float getOscillatorFrequency(Oscillator_t* oscillator);
-float getOscillatorVolume(Oscillator_t* oscillator);
+float getOscillatorTargetVolume(Oscillator_t* oscillator);
+float getOscillatorCurrentVolume(Oscillator_t* oscillator);
+
 
 #endif /* INC_OSCILLATOR_H_ */

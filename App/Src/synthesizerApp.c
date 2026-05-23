@@ -4,6 +4,7 @@
 #include "oscillator.h"
 #include "user_interface.h"
 #include "synthesizer.h"
+#include "audio.h"
 
 void synthesizer(){
 

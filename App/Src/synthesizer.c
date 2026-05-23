@@ -7,6 +7,7 @@
 
 #include "synthesizer.h"
 #include "main.h"
+#include "audio.h"
 
 static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer);
 static void updateSynthesizerParameters(Synthesizer_t* synthesizer);
@@ -36,6 +37,9 @@ void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserI
 
 	initEnvelope(envelope);
 	synthesizer->envelope = envelope;
+
+	// temp for refactoring
+	oscillatorRegister(oscillator);
 }
 
 
@@ -61,7 +65,7 @@ static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 
 	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform(synthesizer->userInterface));
-	setOscillatorVolume(synthesizer->oscillator, oscillatorTargetVolume * getEnvelopeAttack(synthesizer->envelope));
+	setOscillatorTargetVolume(synthesizer->oscillator, oscillatorTargetVolume);
 	setOscillatorPhaseIncrement(synthesizer->oscillator, computePhaseIncrement(oscillatorFrequency, i2sForExternalDAC));
 
 	// temp for tests

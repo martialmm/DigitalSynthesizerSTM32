@@ -14,14 +14,9 @@
 #define WAVE_AMPLITUDE 16000
 #define PIPI 6.2831853f
 
-static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames);
 static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWaveform);
 
-static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
-static Oscillator_t* oscillator1 = NULL;
-
 struct Oscillator {
-    float antiPopEnvelope;
     float frequency;
     float targetVolume;
     float currentVolume;
@@ -39,25 +34,14 @@ DMA_HandleTypeDef* ch_hdma_spi2_tx = NULL;
 
 // ---- INITIALIZATION ---- //
 
-void startI2SOscillator(I2S_HandleTypeDef* hi2s){
-	HAL_I2S_Transmit_DMA(hi2s, (uint16_t*) &dmaAudioBuffer, TOTAL_BUFFER_SIZE);
-}
-
-// temp for refactoring
-void oscillatorRegister(Oscillator_t* oscillator) {
-	oscillator1 = oscillator;
-}
-
 Oscillator_t* createOscillator(void) {
     static Oscillator_t instance = {0};
     return &instance;
 }
 
 void initOscillator(Oscillator_t* oscillator){
-	oscillatorRegister(oscillator);
 	oscillator->activeLookupTable = sineLookupTable;
 	oscillator->detune = 0;
-	oscillator->antiPopEnvelope = 0.0f;
 	oscillator->frequency = 0.0f;
 	oscillator->phase = 0;
 	oscillator->phaseIncrement = 0;
@@ -87,8 +71,12 @@ void setOscillatorPhaseIncrement(Oscillator_t* oscillator, uint32_t phaseIncreme
 	oscillator->phaseIncrement = phaseIncrement;
 }
 
-void setOscillatorVolume(Oscillator_t* oscillator, float targetVolume){
+void setOscillatorTargetVolume(Oscillator_t* oscillator, float targetVolume){
 	oscillator->targetVolume = targetVolume;
+}
+
+void setOscillatorCurrentvolume(Oscillator_t* oscillator, float currentVolume){
+	oscillator->currentVolume = currentVolume;
 }
 
 void noteIsPlayed(Oscillator_t* oscillator){
@@ -100,15 +88,19 @@ void noteIsNotPlayed(Oscillator_t* oscillator){
 }
 
 
-
 // ---- GETTERS ---- //
+
 
 float getOscillatorFrequency(Oscillator_t* oscillator){
 	return oscillator->frequency;
 }
 
-float getOscillatorVolume(Oscillator_t* oscillator){
+float getOscillatorTargetVolume(Oscillator_t* oscillator){
 	return oscillator->targetVolume;
+}
+
+float getOscillatorCurrentVolume(Oscillator_t* oscillator){
+	return oscillator->currentVolume;
 }
 
 
@@ -118,12 +110,18 @@ uint32_t computePhaseIncrement(float wantedWaveFrequency, I2S_HandleTypeDef *hi2
 	return (uint32_t)(((double)wantedWaveFrequency / (double)hi2s->Init.AudioFreq) * 4294967296.0f); // 4294967296.0 = 2^32
 }
 
-void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[0], NUMBER_OF_FRAMES_PER_HALF);
-}
+float getNextOscillatorSample(Oscillator_t* oscillator){
+	float sample;
 
-void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s){
-	feedDMAAudioBuffer(oscillator1, &dmaAudioBuffer[TOTAL_BUFFER_SIZE >> 1], NUMBER_OF_FRAMES_PER_HALF);
+	if(oscillator->activeLookupTable != NULL) {
+		sample = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT];
+	} else {
+		sample = 0.0f;
+	}
+
+	oscillator->phase += oscillator->phaseIncrement;
+
+	return sample;
 }
 
 
@@ -142,37 +140,4 @@ static const int16_t* defineActiveLookupTableWaveform(Waveform_t selectedWavefor
 	else{
 		return squareLookupTable;
 	 }
-}
-
-static void feedDMAAudioBuffer(Oscillator_t* oscillator, int16_t* buffer, uint16_t num_frames){
-	float output;
-	const float antipopFactor = 0.001f;
-	const float volumeSmoothing = 0.001f;
-
-	for(uint16_t i = 0; i < num_frames; i++){
-		oscillator->currentVolume += (oscillator->targetVolume - oscillator->currentVolume) * volumeSmoothing;
-		if(oscillator->noteIsPlayed){
-			oscillator->antiPopEnvelope += antipopFactor;
-			if(oscillator->antiPopEnvelope > 1.0f) oscillator->antiPopEnvelope = 1.0f;
-		}
-		else{
-			oscillator->antiPopEnvelope -= antipopFactor;
-			if (oscillator->antiPopEnvelope < 0.0f) oscillator->antiPopEnvelope = 0.0f;
-		}
-
-        if(oscillator->activeLookupTable != NULL) {
-            output = oscillator->activeLookupTable[oscillator->phase >> FP_SHIFT_AMOUNT] * oscillator->antiPopEnvelope * oscillator->currentVolume;
-        } else {
-            output = 0.0f;
-        }
-
-		// securite pour pas perde un ou deux tympans
-		if (output > 32767.0f) output = 32767.0f;
-		if (output < -32768.0f) output = -32768.0f;
-
-		buffer[2*i] = output;
-		buffer[2*i+1] = output;
-
-		oscillator->phase += oscillator->phaseIncrement;
-	}
 }
