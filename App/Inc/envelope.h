@@ -15,6 +15,7 @@ typedef struct Envelope Envelope_t;
 Envelope_t* createEnvelope(void);
 void envelopeRegister(Envelope_t* envelope);
 void initEnvelope(Envelope_t* envelope);
+float processSampleEnvelope(Envelope_t* envelope);
 
 void setEnvelopeAttack(Envelope_t* envelope,  float attackPotentiometer);
 float getEnvelopeAttack(Envelope_t* envelope);

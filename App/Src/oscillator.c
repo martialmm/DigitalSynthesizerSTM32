@@ -24,7 +24,6 @@ struct Oscillator {
     uint32_t phaseIncrement;
     const int16_t* activeLookupTable;
     int8_t detune;
-    uint8_t noteIsPlayed;
     Waveform_t waveform;
 };
 
@@ -47,7 +46,6 @@ void initOscillator(Oscillator_t* oscillator){
 	oscillator->phaseIncrement = 0;
 	oscillator->targetVolume = 0.0f;
 	oscillator->waveform = SINUS;
-	oscillator->noteIsPlayed = 0;
 }
 
 // ---- SETTERS ---- //
@@ -78,15 +76,6 @@ void setOscillatorTargetVolume(Oscillator_t* oscillator, float targetVolume){
 void setOscillatorCurrentvolume(Oscillator_t* oscillator, float currentVolume){
 	oscillator->currentVolume = currentVolume;
 }
-
-void noteIsPlayed(Oscillator_t* oscillator){
-	oscillator->noteIsPlayed = 1;
-}
-
-void noteIsNotPlayed(Oscillator_t* oscillator){
-	oscillator->noteIsPlayed = 0;
-}
-
 
 // ---- GETTERS ---- //
 

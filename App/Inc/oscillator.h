@@ -12,8 +12,6 @@
 #include "stm32f4xx_hal.h"
 #include "synth_definitions.h"
 
-#define NUMBER_OF_FRAMES_PER_HALF 32  // 32 samples (left+right) for each call
-#define TOTAL_BUFFER_SIZE (NUMBER_OF_FRAMES_PER_HALF * 2 * 2) // 32 frames * 2 (L/R) * 2 (halves) = 128 values
 #define LUT_BITS 12
 #define FP_SHIFT_AMOUNT (32 - LUT_BITS)
 
@@ -30,8 +28,6 @@ void setOscillatorFrequency(Oscillator_t* oscillator, float frequency);
 void setOscillatorPhaseIncrement(Oscillator_t* oscillator, uint32_t phaseIncrement);
 void setOscillatorTargetVolume(Oscillator_t* oscillator, float targetVolume);
 void setOscillatorCurrentvolume(Oscillator_t* oscillator, float currentVolume);
-void noteIsPlayed(Oscillator_t* oscillator);
-void noteIsNotPlayed(Oscillator_t* oscillator);
 
 // GETTERS
 float getOscillatorFrequency(Oscillator_t* oscillator);

@@ -7,15 +7,20 @@
 
 #include "main.h"
 #include "audio.h"
-#include "oscillator.h"
+#include "envelope.h"
 
 static void feedDMAAudioBuffer(int16_t* buffer, uint16_t num_frames);
 
 static int16_t dmaAudioBuffer[TOTAL_BUFFER_SIZE]; // double buffering --> we modify one half while the other half is being processed by the DMA (= automatically enable circucal mode)
 static Oscillator_t* oscillator = NULL;
+static Envelope_t* envelope = NULL;
 
 void oscillatorRegister(Oscillator_t* oscillatorToAdd) {
 	oscillator = oscillatorToAdd;
+}
+
+void audioEnvelopeRegister(Envelope_t* envelopeToAdd) {
+	envelope = envelopeToAdd;
 }
 
 void startI2SOscillator(I2S_HandleTypeDef* hi2s){
@@ -40,7 +45,7 @@ static void feedDMAAudioBuffer(int16_t* buffer, uint16_t num_frames){
 		oscillatorCurrentVolume = oscillatorCurrentVolume + (oscillatorTargetVolume - oscillatorCurrentVolume) * volumeSmoothing;
 		setOscillatorCurrentvolume(oscillator, oscillatorCurrentVolume);
 
-		float sample = getNextOscillatorSample(oscillator) * getOscillatorCurrentVolume(oscillator); // * getEnveloppe()
+		float sample = getNextOscillatorSample(oscillator) * getOscillatorCurrentVolume(oscillator) * processSampleEnvelope(envelope);
 
 		// securite pour pas perde un ou deux tympans
 		if (sample > 32767.0f) sample = 32767.0f;

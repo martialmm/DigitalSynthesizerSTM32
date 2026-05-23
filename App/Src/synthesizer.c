@@ -40,6 +40,7 @@ void initSynthesizer(Synthesizer_t* synthesizer, Oscillator_t* oscillator, UserI
 
 	// temp for refactoring
 	oscillatorRegister(oscillator);
+	audioEnvelopeRegister(envelope);
 }
 
 
@@ -71,16 +72,13 @@ static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
 	// temp for tests
 	if(getButtonsState(synthesizer->userInterface) & BTN_LOWER_OCTAVE){
 		setOscillatorFrequency(synthesizer->oscillator, 523.25f);
-		noteIsPlayed(synthesizer->oscillator);
 		setEnvelopeGate(synthesizer->envelope, 1);
 	}
 	else if(getButtonsState(synthesizer->userInterface) & BTN_UPPER_OCTAVE){
 		setOscillatorFrequency(synthesizer->oscillator, 783.99f);
-		noteIsPlayed(synthesizer->oscillator);
 		setEnvelopeGate(synthesizer->envelope, 1);
 	}
 	else{
-		noteIsNotPlayed(synthesizer->oscillator);
 		setEnvelopeGate(synthesizer->envelope, 0);
 	}
 }
