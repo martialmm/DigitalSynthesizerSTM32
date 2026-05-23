@@ -10,6 +10,8 @@
 
 #include "main.h"
 
+#define SAMPLE_RATE 96000
+
 typedef struct Envelope Envelope_t;
 
 Envelope_t* createEnvelope(void);
