@@ -5,8 +5,8 @@
  *      Author: mars
  */
 
+#include <stddef.h>
 #include "envelope.h"
-#include "main.h"
 
 static Envelope_t* envelope1 = NULL;
 

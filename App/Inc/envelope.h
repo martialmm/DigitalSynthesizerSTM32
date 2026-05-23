@@ -8,7 +8,7 @@
 #ifndef INC_ENVELOPE_H_
 #define INC_ENVELOPE_H_
 
-#include "main.h"
+#include <stdint.h>
 
 #define SAMPLE_RATE 96000
 
