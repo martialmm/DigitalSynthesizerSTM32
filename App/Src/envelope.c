@@ -39,7 +39,7 @@ void initEnvelope(Envelope_t* envelope){
 }
 
 float processSampleEnvelope(Envelope_t* envelope){
-	float attackTime = 2.0f; // seconds
+	float attackTime = 1.0f; // seconds
 	float attackRate = 1.0f / (SAMPLE_RATE * attackTime);
 	if(envelope->gate){
 		envelope->attack += attackRate;
