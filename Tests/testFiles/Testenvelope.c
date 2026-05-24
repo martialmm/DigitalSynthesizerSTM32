@@ -3,19 +3,24 @@
 #include "../../App/Inc/envelope.h"
 #define SAMPLE_RATE 96000
 
-void setUp(){}
+static Envelope_t* envelope;
+
+void setUp(){
+    envelope = createEnvelope();
+    initEnvelope(envelope);
+}
+
 void tearDown(){}
 
 void envelope_with_an_attack_of_1_second(){
 	// Given
-	Envelope_t* envelope = createEnvelope();
-	initEnvelope(envelope);
+	float attackTime = 1.0f; // in seconds
 	setEnvelopeGate(envelope, 1);
-	setEnvelopeAttackTime(envelope, 1.0f);
+	setEnvelopeAttackTime(envelope, attackTime);
 	float output = 0.0f;
 
 	// When
-	for(uint32_t i = 0; i < SAMPLE_RATE; i++){
+	for(uint32_t i = 0; i < (attackTime * SAMPLE_RATE); i++){
 		output = processSampleEnvelope(envelope);
 	}
 
