@@ -8,11 +8,9 @@
 #include <stddef.h>
 #include "envelope.h"
 
-static Envelope_t* envelope1 = NULL;
-
 struct Envelope{
 	float attack;
-	float attackRate;
+	float attackTime;
 	float decay;
 	float sustain;
 	float release;
@@ -62,4 +60,8 @@ void setEnvelopeAttack(Envelope_t* envelope, float attackPotentiometer){
 
 void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate){
 	envelope->gate = wantedGateSate;
+}
+
+void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime){
+	envelope->attackTime = attackTime;
 }
