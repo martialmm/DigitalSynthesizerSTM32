@@ -22,23 +22,17 @@ Envelope_t* createEnvelope(void) {
     return &instance;
 }
 
-void envelopeRegister(Envelope_t* envelope){
-	envelope1 = envelope;
-}
-
 void initEnvelope(Envelope_t* envelope){
-	envelopeRegister(envelope);
-	envelope->attack = 0;
-	envelope->attackRate = 0;
-	envelope->decay = 0;
-	envelope->sustain = 0;
-	envelope->release = 0;
+	envelope->attack = 0.0f;
+	envelope->attackTime = 0.0f;
+	envelope->decay = 0.0f;
+	envelope->sustain = 0.0f;
+	envelope->release = 0.0f;
 	envelope->gate = 0;
 }
 
 float processSampleEnvelope(Envelope_t* envelope){
-	float attackTime = 1.0f; // seconds
-	float attackRate = 1.0f / (SAMPLE_RATE * attackTime);
+	float attackRate = 1.0f / (SAMPLE_RATE * envelope->attackTime);
 	if(envelope->gate){
 		envelope->attack += attackRate;
 		if(envelope->attack > 1.0f) envelope->attack = 1.0f;
