@@ -6,3 +6,6 @@ build/
 .settings/
 *.launch
 Tests/Unity/
+Tests/objects/
+Tests/out/
+Tests/results/
