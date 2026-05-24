@@ -19,6 +19,8 @@ void initEnvelope(Envelope_t* envelope);
 float processSampleEnvelope(Envelope_t* envelope);
 
 float getEnvelopeAttack(Envelope_t* envelope);
+float getEnvelopeAttackTime(Envelope_t* envelope);
+
 void setEnvelopeAttack(Envelope_t* envelope,  float attackPotentiometer);
 void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate);
 void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime);
