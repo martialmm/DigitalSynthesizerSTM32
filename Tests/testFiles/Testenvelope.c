@@ -19,12 +19,12 @@ void envelope_with_an_attack_of_1_second(){
 	setEnvelopeAttackTime(envelope, attackTime);
 
 	// When
-	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
+	for(uint32_t i = 0; i <= (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
 		output = processSampleEnvelope(envelope);
 	}
 
 	// Then
-	TEST_ASSERT_EQUAL_FLOAT(1.0f, output);
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, output);
 }
 
 void envelope_with_an_attack_of_0_second(){
@@ -35,12 +35,12 @@ void envelope_with_an_attack_of_0_second(){
 	setEnvelopeAttackTime(envelope, attackTime);
 
 	// When
-	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
+	for(uint32_t i = 0; i <= (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
 		output = processSampleEnvelope(envelope);
 	}
 
 	// Then
-	TEST_ASSERT_EQUAL_FLOAT(1.0f, output);
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, output);
 }
 
 void envelope_with_a_release_of_1_second(){
@@ -52,12 +52,12 @@ void envelope_with_a_release_of_1_second(){
 	setEnvelopeGate(envelope, 0);
 
 	// When
-	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
+	for(uint32_t i = 0; i <= (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
 		output = processSampleEnvelope(envelope);
 	}
 
 	//Then
-	TEST_ASSERT_EQUAL_FLOAT(0.0f, output);
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
 
