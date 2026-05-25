@@ -49,7 +49,7 @@ float processSampleEnvelope(Envelope_t* envelope){
 		envelope->currentLevel+= envelope->attackRate;
 
 		if(envelope->currentLevel >= 1.0f) envelope->currentLevel = 1.0f;
-		if(envelope->currentLevel == 1.0f && !envelope->gate) envelope->adsrState = RELEASE;
+		if(!envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
 	case RELEASE:

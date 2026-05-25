@@ -87,6 +87,45 @@ void envelope_with_a_release_of_0_second(){
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
+void the_attack_is_stopped_during_its_rampup(){
+	// Given
+	float attackTime = 1.0f;
+	float releaseTime = 2.0f;
+	float output = 0.0f;
+	setEnvelopeReleaseTime(envelope, releaseTime);
+	setEnvelopeAttackTime(envelope, attackTime);
+
+	// Note pressed
+	setEnvelopeGate(envelope, 1);
+
+	/* ----- ATTACK PHASE ----- */
+
+	// When (1)
+	// we want to stop the attack at its half:
+	for(uint32_t i = 0; i < (uint32_t)(0.5f * getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then (1)
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.5f, output);
+
+
+	/* ----- RELEASE PHASE ----- */
+
+	// When (2)
+
+	// note released
+	setEnvelopeGate(envelope, 0);
+
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then (2)
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
+}
+
+
 int main(void){
 	UNITY_BEGIN();
 
@@ -94,6 +133,7 @@ int main(void){
 	RUN_TEST(envelope_with_an_attack_of_0_second);
 	RUN_TEST(envelope_with_a_release_of_1_second);
 	RUN_TEST(envelope_with_a_release_of_0_second);
+	RUN_TEST(the_attack_is_stopped_during_its_rampup);
 
 	return UNITY_END();
 }
