@@ -18,6 +18,14 @@ struct Envelope{
 	uint8_t gate;
 };
 
+typedef enum{
+	ATTACK,
+	DECAY,
+	SUSTAIN,
+	RELEASE,
+	IDLE
+} ADSRstate_t;
+
 Envelope_t* createEnvelope(void) {
     static Envelope_t instance = {0};
     return &instance;
@@ -37,19 +45,39 @@ float processSampleEnvelope(Envelope_t* envelope){
 	float attackRate = 1.0f / (SAMPLE_RATE * envelope->attackTime);
 	float releaseRate = 1.0f / (SAMPLE_RATE * envelope->releaseTime);
 
-	if(envelope->gate){
+	static ADSRstate_t adsrState = IDLE;
+	float output = 0.0f;
+
+	switch(adsrState){
+
+	case IDLE:
+		if(envelope->gate) adsrState = ATTACK;
+		break;
+
+	case ATTACK:
 		envelope->attack += attackRate;
-		if(envelope->attack > 1.0f) envelope->attack = 1.0f;
-	}
-	else{
-		envelope->attack = 0.0f;
-	}
+		output = envelope->attack;
+		if(output > 1.0f){
+			envelope->attack = 1.0f;
+			output = 1.0f;
+		}
 
-	if(envelope->gate == 0 && envelope->attack == 1.0f){
-		envelope->attack -= releaseRate;
-	}
+		if(output == 1.0f && !envelope->gate) adsrState = RELEASE;
+		break;
 
-	return envelope->attack;
+	case RELEASE:
+		envelope->release -= releaseRate;
+		output = envelope->release;
+		if(output < 0.0f){
+			envelope->release = 0.0f;
+			output = 0.0f;
+		}
+
+		if(envelope->gate) adsrState = ATTACK;
+		else if(output == 0.0f && !envelope->gate) adsrState = IDLE;
+		break;
+	}
+	return output;
 }
 
 
