@@ -90,15 +90,15 @@ void envelope_with_a_release_of_0_second(){
 void the_attack_is_stopped_during_its_rampup(){
 	// Given
 	float attackTime = 1.0f;
-	float releaseTime = 2.0f;
+	float releaseTime = 1.0f;
 	float output = 0.0f;
 	setEnvelopeReleaseTime(envelope, releaseTime);
 	setEnvelopeAttackTime(envelope, attackTime);
 
+	/* ----- ATTACK PHASE ----- */
+
 	// Note pressed
 	setEnvelopeGate(envelope, 1);
-
-	/* ----- ATTACK PHASE ----- */
 
 	// When (1)
 	// we want to stop the attack at its half:
@@ -125,6 +125,46 @@ void the_attack_is_stopped_during_its_rampup(){
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
+void the_attack_is_retriggered_while_release_rampdown(){
+	// Given
+	float attackTime = 1.0f;
+	float releaseTime = 1.0f;
+	float output = 1.0f;
+	setEnvelopeAttackTime(envelope, attackTime);
+	setEnvelopeReleaseTime(envelope, releaseTime);
+	setEnvelopeCurrentLevel(envelope, 1.0f);
+
+
+	/* ----- RELEASE PHASE ----- */
+
+	// force envelope state
+	setEnvelopeState(envelope, RELEASE);
+	setEnvelopeGate(envelope, 0);
+
+	// When (1)
+	// we want to stop the release at its half:
+	for(uint32_t i = 0; i < (uint32_t)(0.5f * getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then (1)
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.5f, output);
+
+
+	/* ----- ATTACK PHASE ----- */
+
+	// Note pressed
+	setEnvelopeGate(envelope, 1);
+
+	// When (2)
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then (1)
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, output);
+}
+
 
 int main(void){
 	UNITY_BEGIN();
@@ -134,6 +174,7 @@ int main(void){
 	RUN_TEST(envelope_with_a_release_of_1_second);
 	RUN_TEST(envelope_with_a_release_of_0_second);
 	RUN_TEST(the_attack_is_stopped_during_its_rampup);
+	RUN_TEST(the_attack_is_retriggered_while_release_rampdown);
 
 	return UNITY_END();
 }
