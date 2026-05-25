@@ -8,22 +8,13 @@
 #include <stddef.h>
 #include "envelope.h"
 
-typedef enum{
-	ATTACK,
-	DECAY,
-	SUSTAIN,
-	RELEASE,
-	IDLE
-} ADSRstate_t;
-
 struct Envelope{
 	ADSRstate_t adsrState;
-	float attack;
+	float currentLevel;
 	float attackTime;
 	float attackRate;
 	float decay;
 	float sustain;
-	float release;
 	float releaseTime;
 	float releaseRate;
 	uint8_t gate;
@@ -37,20 +28,17 @@ Envelope_t* createEnvelope(void) {
 
 void initEnvelope(Envelope_t* envelope){
 	envelope->adsrState = IDLE;
-	envelope->attack = 0.0f;
+	envelope->currentLevel = 0.0f;
 	envelope->attackTime = 0.0f;
 	envelope->attackRate = 0.0f;
 	envelope->decay = 0.0f;
 	envelope->sustain = 0.0f;
-	envelope->release = 0.0f;
 	envelope->releaseTime = 0.0f;
 	envelope->releaseRate = 0.0f;
 	envelope->gate = 0;
 }
 
 float processSampleEnvelope(Envelope_t* envelope){
-	float output = 0.0f;
-
 	switch(envelope->adsrState){
 
 	case IDLE:
@@ -58,29 +46,22 @@ float processSampleEnvelope(Envelope_t* envelope){
 		break;
 
 	case ATTACK:
-		envelope->attack += envelope->attackRate;
+		envelope->currentLevel+= envelope->attackRate;
 
-		if(envelope->attack >= 1.0f) envelope->attack = 1.0f;
-		output = envelope->attack;
-		if(output == 1.0f && !envelope->gate) envelope->adsrState = RELEASE;
+		if(envelope->currentLevel >= 1.0f) envelope->currentLevel = 1.0f;
+		if(envelope->currentLevel == 1.0f && !envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
 	case RELEASE:
-		envelope->release -= envelope->releaseRate;
-		if(output <= 0.0f){
-			envelope->release = 0.0f;
+		envelope->currentLevel -= envelope->releaseRate;
+		if(envelope->currentLevel <= 0.0f){
+			envelope->currentLevel = 0.0f;
 		}
-		output = envelope->release;
 		if(envelope->gate) envelope->adsrState = ATTACK;
-		else if(output == 0.0f && !envelope->gate) envelope->adsrState = IDLE;
+		else if(envelope->currentLevel == 0.0f && !envelope->gate) envelope->adsrState = IDLE;
 		break;
 	}
-	return output;
-}
-
-
-float getEnvelopeAttack(Envelope_t* envelope){
-	return envelope->attack;
+	return envelope->currentLevel;
 }
 
 float getEnvelopeAttackTime(Envelope_t* envelope){
@@ -91,8 +72,8 @@ float getEnvelopeReleaseTime(Envelope_t* envelope){
 	return envelope->releaseTime;
 }
 
-void setEnvelopeAttack(Envelope_t* envelope, float attack){
-	envelope->attack = attack;
+void setEnvelopeCurrentLevel(Envelope_t* envelope, float currentLevel){
+	envelope->currentLevel = currentLevel;
 }
 
 void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate){
@@ -108,4 +89,8 @@ void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime){
 void setEnvelopeReleaseTime(Envelope_t* envelope, float releaseTime){
 	envelope->releaseRate = 1.0f / (SAMPLE_RATE * releaseTime);
 	envelope->releaseTime = releaseTime;
+}
+
+void setEnvelopeState(Envelope_t* envelope, ADSRstate_t adsrState){
+	envelope->adsrState = adsrState;
 }

@@ -89,7 +89,6 @@ static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 		scanPushButtonsInputsForNotes(synthesizer->userInterface);
 
 		float attackPotentiometerRaw = getPotentiometerRaw(synthesizer->userInterface, POT_ENV_ATTACK); // a bouger dans le scan du timer
-		setEnvelopeAttack(synthesizer->envelope, attackPotentiometerRaw); // pareil
 
 		scanWaveformsSwitches(synthesizer->userInterface);
 		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);

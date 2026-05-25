@@ -14,18 +14,26 @@
 
 typedef struct Envelope Envelope_t;
 
+typedef enum{
+	ATTACK,
+	DECAY,
+	SUSTAIN,
+	RELEASE,
+	IDLE
+} ADSRstate_t;
+
 Envelope_t* createEnvelope(void);
 void initEnvelope(Envelope_t* envelope);
 float processSampleEnvelope(Envelope_t* envelope);
 
-float getEnvelopeAttack(Envelope_t* envelope);
 float getEnvelopeAttackTime(Envelope_t* envelope);
 float getEnvelopeReleaseTime(Envelope_t* envelope);
 
-void setEnvelopeAttack(Envelope_t* envelope,  float attackPotentiometer);
+void setEnvelopeCurrentLevel(Envelope_t* envelope, float currentVolume);
 void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate);
 void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime);
 void setEnvelopeReleaseTime(Envelope_t* envelope, float releaseTime);
+void setEnvelopeState(Envelope_t* envelope, ADSRstate_t adsrState);
 
 
 #endif /* INC_ENVELOPE_H_ */
