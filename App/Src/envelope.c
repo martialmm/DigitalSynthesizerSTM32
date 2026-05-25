@@ -87,6 +87,7 @@ void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime){
 }
 
 void setEnvelopeReleaseTime(Envelope_t* envelope, float releaseTime){
+	if(releaseTime < 0.001f) releaseTime = 0.001f;
 	envelope->releaseRate = 1.0f / (SAMPLE_RATE * releaseTime);
 	envelope->releaseTime = releaseTime;
 }
