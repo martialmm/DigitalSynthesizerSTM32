@@ -43,12 +43,30 @@ void envelope_with_an_attack_of_0_second(){
 	TEST_ASSERT_EQUAL_FLOAT(1.0f, output);
 }
 
+void envelope_with_a_release_of_1_second(){
+	// Given
+	float releaseTime = 1.0f;
+	float output = 1.0f;
+	setEnvelopeReleaseTime(envelope, releaseTime);
+	setEnvelopeAttack(envelope, 1.0f);
+	setEnvelopeGate(envelope, 0);
+
+	// When
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then
+	TEST_ASSERT_EQUAL_FLOAT(0.0f, output);
+}
+
 
 int main(void){
 	UNITY_BEGIN();
 
 	RUN_TEST(envelope_with_an_attack_of_1_second);
 	RUN_TEST(envelope_with_an_attack_of_0_second);
+	RUN_TEST(envelope_with_a_release_of_1_second);
 
 	return UNITY_END();
 }
