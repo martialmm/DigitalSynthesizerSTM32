@@ -8,7 +8,16 @@
 #include <stddef.h>
 #include "envelope.h"
 
+typedef enum{
+	ATTACK,
+	DECAY,
+	SUSTAIN,
+	RELEASE,
+	IDLE
+} ADSRstate_t;
+
 struct Envelope{
+	ADSRstate_t adsrState;
 	float attack;
 	float attackTime;
 	float attackRate;
@@ -20,13 +29,6 @@ struct Envelope{
 	uint8_t gate;
 };
 
-typedef enum{
-	ATTACK,
-	DECAY,
-	SUSTAIN,
-	RELEASE,
-	IDLE
-} ADSRstate_t;
 
 Envelope_t* createEnvelope(void) {
     static Envelope_t instance = {0};
@@ -34,6 +36,7 @@ Envelope_t* createEnvelope(void) {
 }
 
 void initEnvelope(Envelope_t* envelope){
+	envelope->adsrState = IDLE;
 	envelope->attack = 0.0f;
 	envelope->attackTime = 0.0f;
 	envelope->attackRate = 0.0f;
@@ -46,36 +49,30 @@ void initEnvelope(Envelope_t* envelope){
 }
 
 float processSampleEnvelope(Envelope_t* envelope){
-	static ADSRstate_t adsrState = IDLE;
 	float output = 0.0f;
 
-	switch(adsrState){
+	switch(envelope->adsrState){
 
 	case IDLE:
-		if(envelope->gate) adsrState = ATTACK;
+		if(envelope->gate) envelope->adsrState = ATTACK;
 		break;
 
 	case ATTACK:
 		envelope->attack += envelope->attackRate;
-		output = envelope->attack;
-		if(output > 1.0f){
-			envelope->attack = 1.0f;
-			output = 1.0f;
-		}
 
-		if(output == 1.0f && !envelope->gate) adsrState = RELEASE;
+		if(envelope->attack >= 1.0f) envelope->attack = 1.0f;
+		output = envelope->attack;
+		if(output == 1.0f && !envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
 	case RELEASE:
 		envelope->release -= envelope->releaseRate;
-		output = envelope->release;
-		if(output < 0.0f){
+		if(output <= 0.0f){
 			envelope->release = 0.0f;
-			output = 0.0f;
 		}
-
-		if(envelope->gate) adsrState = ATTACK;
-		else if(output == 0.0f && !envelope->gate) adsrState = IDLE;
+		output = envelope->release;
+		if(envelope->gate) envelope->adsrState = ATTACK;
+		else if(output == 0.0f && !envelope->gate) envelope->adsrState = IDLE;
 		break;
 	}
 	return output;
