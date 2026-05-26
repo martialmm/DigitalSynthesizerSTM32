@@ -116,6 +116,9 @@ void the_attack_is_stopped_during_its_rampup(){
 
 	// note released
 	setEnvelopeGate(envelope, 0);
+	// trigger state change
+	output = processSampleEnvelope(envelope);
+	TEST_ASSERT_EQUAL_INT(RELEASE, getEnvelopeState(envelope));
 
 	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
 		output = processSampleEnvelope(envelope);
@@ -155,6 +158,9 @@ void the_attack_is_retriggered_while_release_rampdown(){
 
 	// Note pressed
 	setEnvelopeGate(envelope, 1);
+	// trigger state change
+	output = processSampleEnvelope(envelope);
+	TEST_ASSERT_EQUAL_INT(ATTACK, getEnvelopeState(envelope));
 
 	// When (2)
 	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
@@ -203,6 +209,7 @@ void envelope_with_2_sec_attack_and_3_sec_decay(){
 
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, output);
 
+
 	/* ----- DECAY PHASE ----- */
 
 	// When (2)
@@ -211,6 +218,7 @@ void envelope_with_2_sec_attack_and_3_sec_decay(){
 	}
 
 	// Then
+	TEST_ASSERT_EQUAL_INT(DECAY, getEnvelopeState(envelope));
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
