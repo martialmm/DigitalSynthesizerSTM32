@@ -48,39 +48,52 @@ float processSampleEnvelope(Envelope_t* envelope){
 		break;
 
 	case ATTACK:
-		envelope->currentLevel+= envelope->attackRate;
-		if(envelope->currentLevel >= 1.0f) {
-			envelope->currentLevel = 1.0f;
-			if(envelope->gate){
-				envelope->adsrState = DECAY;
-			}
-		}
-		if(!envelope->gate) envelope->adsrState = RELEASE;
-		break;
-
-	case DECAY:
-		envelope->currentLevel -= envelope->decayRate;
 		if(!envelope->gate){
 			envelope->adsrState = RELEASE;
 			break;
 		}
+
+		envelope->currentLevel+= envelope->attackRate;
+
+		if(envelope->currentLevel >= 1.0f) {
+			envelope->currentLevel = 1.0f;
+			envelope->adsrState = DECAY;
+		}
+		break;
+
+	case DECAY:
+		if(!envelope->gate){
+			envelope->adsrState = RELEASE;
+			break;
+		}
+
+		envelope->currentLevel -= envelope->decayRate;
+
 		if(envelope->currentLevel <= envelope->sustainLevel){
+			envelope->currentLevel = envelope->sustainLevel;
 			envelope->adsrState = SUSTAIN;
 		}
 		break;
 
 	case SUSTAIN:
+		if(!envelope->gate){
+			envelope->adsrState = RELEASE;
+			break;
+		}
 		envelope->currentLevel = envelope->sustainLevel;
-		if(!envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
 	case RELEASE:
+		if(envelope->gate){
+			envelope->adsrState = ATTACK;
+			break;
+		}
 		envelope->currentLevel -= envelope->releaseRate;
+
 		if(envelope->currentLevel <= 0.0f){
 			envelope->currentLevel = 0.0f;
 			envelope->adsrState = IDLE;
 		}
-		if(envelope->gate) envelope->adsrState = ATTACK;
 		break;
 	}
 	return envelope->currentLevel;
