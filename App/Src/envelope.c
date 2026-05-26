@@ -61,6 +61,7 @@ float processSampleEnvelope(Envelope_t* envelope){
 	case DECAY:
 		envelope->currentLevel -= envelope->decayRate;
 		if(envelope->currentLevel <= 0.0f) envelope->currentLevel = 0.0f;
+		if(!envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
 	case RELEASE:
@@ -85,6 +86,10 @@ float getEnvelopeDecayTime(Envelope_t* envelope){
 
 float getEnvelopeReleaseTime(Envelope_t* envelope){
 	return envelope->releaseTime;
+}
+
+ADSRstate_t getEnvelopeState(Envelope_t* envelope){
+	return envelope->adsrState;
 }
 
 void setEnvelopeCurrentLevel(Envelope_t* envelope, float currentLevel){

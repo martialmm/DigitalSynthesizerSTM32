@@ -214,6 +214,46 @@ void envelope_with_2_sec_attack_and_3_sec_decay(){
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
+void the_decay_is_stopped_during_its_rampdown(){
+	// Given
+	float decayTime = 4.0f;
+	float releaseTime = 3.0f;
+	float output = 1.0f;
+
+	setEnvelopeDecayTime(envelope, decayTime);
+	setEnvelopeReleaseTime(envelope, releaseTime);
+	setEnvelopeCurrentLevel(envelope, output);
+	setEnvelopeGate(envelope, 1);
+	setEnvelopeState(envelope, DECAY);
+
+	/* ----- DECAY PHASE ----- */
+
+	// When (1)
+	// we want to stop the decay at its half:
+	for(uint32_t i = 0; i < (uint32_t)(0.5f * getEnvelopeDecayTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.5f, output);
+
+	/* ----- RELEASE PHASE ----- */
+
+	// When (2)
+	// note released
+	setEnvelopeGate(envelope, 0);
+
+	// trigger state change
+	output = processSampleEnvelope(envelope);
+	TEST_ASSERT_EQUAL_INT(RELEASE, getEnvelopeState(envelope));
+
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
+}
+
 
 int main(void){
 	UNITY_BEGIN();
@@ -226,6 +266,7 @@ int main(void){
 	RUN_TEST(the_attack_is_retriggered_while_release_rampdown);
 	RUN_TEST(envelope_with_a_decay_of_5_seconds);
 	RUN_TEST(envelope_with_2_sec_attack_and_3_sec_decay);
+	RUN_TEST(the_decay_is_stopped_during_its_rampdown);
 
 	return UNITY_END();
 }

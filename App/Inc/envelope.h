@@ -29,6 +29,7 @@ float processSampleEnvelope(Envelope_t* envelope);
 float getEnvelopeAttackTime(Envelope_t* envelope);
 float getEnvelopeDecayTime(Envelope_t* envelope);
 float getEnvelopeReleaseTime(Envelope_t* envelope);
+ADSRstate_t getEnvelopeState(Envelope_t* envelope);
 
 void setEnvelopeCurrentLevel(Envelope_t* envelope, float currentVolume);
 void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate);
