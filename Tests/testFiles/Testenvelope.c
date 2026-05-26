@@ -287,17 +287,26 @@ void envelope_with_3sec_decay_and_sustain_at_80percent_level(){
 	float output = 1.0f;
 	float sustainLevel = 0.8f;
 
-	setEnvelopeDecayTime(envelope, decayTime);
 	setEnvelopeSustainLevel(envelope, sustainLevel);
+	setEnvelopeDecayTime(envelope, decayTime);
 	setEnvelopeGate(envelope, 1);
 	setEnvelopeCurrentLevel(envelope, output);
 	setEnvelopeState(envelope, DECAY);
 
+	uint32_t totalSamples = (uint32_t)(getEnvelopeDecayTime(envelope) * SAMPLE_RATE);
+	uint32_t midPoint = totalSamples / 2;
+
 	/* ----- DECAY PHASE ----- */
 
 	// When (1)
-	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeDecayTime(envelope) * SAMPLE_RATE); i++){
+	// at half of the decay we also want to check the actual level value:
+	for(uint32_t i = 0; i < totalSamples; i++){
 		output = processSampleEnvelope(envelope);
+
+		if(i == midPoint){
+			TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.9f, output);
+			TEST_ASSERT_EQUAL_INT(DECAY, getEnvelopeState(envelope));
+		}
 	}
 
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, sustainLevel, output);

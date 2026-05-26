@@ -120,7 +120,8 @@ void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime){
 }
 
 void setEnvelopeDecayTime(Envelope_t* envelope, float decayTime){
-	envelope->decayRate = 1.0f / (SAMPLE_RATE * decayTime);
+	if(decayTime < 0.001f) decayTime = 0.001f;
+	envelope->decayRate = (1.0f - envelope->sustainLevel) / (SAMPLE_RATE * decayTime);
 	envelope->decayTime = decayTime;
 }
 
