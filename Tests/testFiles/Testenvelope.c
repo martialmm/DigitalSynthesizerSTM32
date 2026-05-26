@@ -184,6 +184,36 @@ void envelope_with_a_decay_of_5_seconds(){
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
+void envelope_with_2_sec_attack_and_3_sec_decay(){
+	// Given
+	float attackTime = 2.0f;
+	float decayTime = 3.0f;
+	float output = 0.0f;
+
+	setEnvelopeAttackTime(envelope, attackTime);
+	setEnvelopeDecayTime(envelope, decayTime);
+
+	/* ----- ATTACK PHASE ----- */
+	setEnvelopeGate(envelope, 1);
+
+	// When (1)
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeAttackTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, output);
+
+	/* ----- DECAY PHASE ----- */
+
+	// When (2)
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeDecayTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	// Then
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
+}
+
 
 int main(void){
 	UNITY_BEGIN();
@@ -195,6 +225,7 @@ int main(void){
 	RUN_TEST(the_attack_is_stopped_during_its_rampup);
 	RUN_TEST(the_attack_is_retriggered_while_release_rampdown);
 	RUN_TEST(envelope_with_a_decay_of_5_seconds);
+	RUN_TEST(envelope_with_2_sec_attack_and_3_sec_decay);
 
 	return UNITY_END();
 }
