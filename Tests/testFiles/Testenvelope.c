@@ -272,9 +272,7 @@ void envelope_with_sustain_at_half_of_the_full_output(){
 	setEnvelopeState(envelope, SUSTAIN);
 
 	// When
-	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeSustainLevel(envelope) * SAMPLE_RATE); i++){
-		output = processSampleEnvelope(envelope);
-	}
+	output = processSampleEnvelope(envelope);
 
 	// Then
 	TEST_ASSERT_EQUAL_INT(SUSTAIN, getEnvelopeState(envelope));
@@ -322,6 +320,42 @@ void envelope_with_3sec_decay_and_sustain_at_80percent_level(){
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.8f, output);
 }
 
+void envelope_with_70percent_sustain_and_4sec_release(){
+	// Given
+	float output = 0.7f;
+	float sustainLevel = 0.7f;
+	float releaseTime = 4.0f;
+
+	setEnvelopeSustainLevel(envelope, sustainLevel);
+	setEnvelopeReleaseTime(envelope, releaseTime);
+	setEnvelopeCurrentLevel(envelope, output);
+	setEnvelopeGate(envelope, 1);
+	setEnvelopeState(envelope, SUSTAIN);
+
+	/* ----- SUSTAIN PHASE ----- */
+
+	// When (1)
+	output = processSampleEnvelope(envelope);
+
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.7f, output);
+
+
+	/* ----- RELEASE PHASE ----- */
+	setEnvelopeGate(envelope, 0);
+
+	// trigger state change
+	output = processSampleEnvelope(envelope);
+	TEST_ASSERT_EQUAL_INT(RELEASE, getEnvelopeState(envelope));
+
+	// When (2)
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeReleaseTime(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	//Then
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
+}
+
 
 int main(void){
 	UNITY_BEGIN();
@@ -337,6 +371,7 @@ int main(void){
 	RUN_TEST(the_decay_is_stopped_during_its_rampdown);
 	RUN_TEST(envelope_with_sustain_at_half_of_the_full_output);
 	RUN_TEST(envelope_with_3sec_decay_and_sustain_at_80percent_level);
+	RUN_TEST(envelope_with_70percent_sustain_and_4sec_release);
 
 	return UNITY_END();
 }

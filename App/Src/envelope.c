@@ -71,6 +71,7 @@ float processSampleEnvelope(Envelope_t* envelope){
 
 	case SUSTAIN:
 		envelope->currentLevel = envelope->sustainLevel;
+		if(!envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
 	case RELEASE:
