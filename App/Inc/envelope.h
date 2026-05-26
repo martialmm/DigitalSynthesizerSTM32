@@ -27,11 +27,13 @@ void initEnvelope(Envelope_t* envelope);
 float processSampleEnvelope(Envelope_t* envelope);
 
 float getEnvelopeAttackTime(Envelope_t* envelope);
+float getEnvelopeDecayTime(Envelope_t* envelope);
 float getEnvelopeReleaseTime(Envelope_t* envelope);
 
 void setEnvelopeCurrentLevel(Envelope_t* envelope, float currentVolume);
 void setEnvelopeGate(Envelope_t* envelope, uint8_t wantedGateSate);
 void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime);
+void setEnvelopeDecayTime(Envelope_t* envelope, float decayTime);
 void setEnvelopeReleaseTime(Envelope_t* envelope, float releaseTime);
 void setEnvelopeState(Envelope_t* envelope, ADSRstate_t adsrState);
 
