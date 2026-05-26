@@ -262,6 +262,25 @@ void the_decay_is_stopped_during_its_rampdown(){
 	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output);
 }
 
+void envelope_with_sustain_at_half_of_the_full_output(){
+	// Given
+	float sustainLevel = 0.5f;
+	float output = 0.5f;
+
+	setEnvelopeSustainLevel(envelope, sustainLevel);
+	setEnvelopeGate(envelope, 1);
+	setEnvelopeState(envelope, SUSTAIN);
+
+	// When
+	for(uint32_t i = 0; i < (uint32_t)(getEnvelopeSustainLevel(envelope) * SAMPLE_RATE); i++){
+		output = processSampleEnvelope(envelope);
+	}
+
+	// Then
+	TEST_ASSERT_EQUAL_INT(SUSTAIN, getEnvelopeState(envelope));
+	TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.5f, output);
+}
+
 
 int main(void){
 	UNITY_BEGIN();
@@ -275,6 +294,7 @@ int main(void){
 	RUN_TEST(envelope_with_a_decay_of_5_seconds);
 	RUN_TEST(envelope_with_2_sec_attack_and_3_sec_decay);
 	RUN_TEST(the_decay_is_stopped_during_its_rampdown);
+	RUN_TEST(envelope_with_sustain_at_half_of_the_full_output);
 
 	return UNITY_END();
 }

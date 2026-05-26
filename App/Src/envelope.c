@@ -15,7 +15,7 @@ struct Envelope{
 	float attackRate;
 	float decayTime;
 	float decayRate;
-	float sustain;
+	float sustainLevel;
 	float releaseTime;
 	float releaseRate;
 	uint8_t gate;
@@ -34,7 +34,7 @@ void initEnvelope(Envelope_t* envelope){
 	envelope->attackRate = 0.0f;
 	envelope->decayTime = 0.0f;
 	envelope->decayRate = 0.0f;
-	envelope->sustain = 0.0f;
+	envelope->sustainLevel = 0.0f;
 	envelope->releaseTime = 0.0f;
 	envelope->releaseRate = 0.0f;
 	envelope->gate = 0;
@@ -64,6 +64,10 @@ float processSampleEnvelope(Envelope_t* envelope){
 		if(!envelope->gate) envelope->adsrState = RELEASE;
 		break;
 
+	case SUSTAIN:
+		envelope->currentLevel = envelope->sustainLevel;
+		break;
+
 	case RELEASE:
 		envelope->currentLevel -= envelope->releaseRate;
 		if(envelope->currentLevel <= 0.0f){
@@ -82,6 +86,10 @@ float getEnvelopeAttackTime(Envelope_t* envelope){
 
 float getEnvelopeDecayTime(Envelope_t* envelope){
 	return envelope->decayTime;
+}
+
+float getEnvelopeSustainLevel(Envelope_t* envelope){
+	return envelope->sustainLevel;
 }
 
 float getEnvelopeReleaseTime(Envelope_t* envelope){
@@ -109,6 +117,10 @@ void setEnvelopeAttackTime(Envelope_t* envelope, float attackTime){
 void setEnvelopeDecayTime(Envelope_t* envelope, float decayTime){
 	envelope->decayRate = 1.0f / (SAMPLE_RATE * decayTime);
 	envelope->decayTime = decayTime;
+}
+
+void setEnvelopeSustainLevel(Envelope_t* envelope, float sustainLevel){
+	envelope->sustainLevel = sustainLevel;
 }
 
 void setEnvelopeReleaseTime(Envelope_t* envelope, float releaseTime){
