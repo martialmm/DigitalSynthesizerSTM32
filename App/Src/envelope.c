@@ -60,8 +60,13 @@ float processSampleEnvelope(Envelope_t* envelope){
 
 	case DECAY:
 		envelope->currentLevel -= envelope->decayRate;
-		if(envelope->currentLevel <= 0.0f) envelope->currentLevel = 0.0f;
-		if(!envelope->gate) envelope->adsrState = RELEASE;
+		if(!envelope->gate){
+			envelope->adsrState = RELEASE;
+			break;
+		}
+		if(envelope->currentLevel <= envelope->sustainLevel){
+			envelope->adsrState = SUSTAIN;
+		}
 		break;
 
 	case SUSTAIN:
