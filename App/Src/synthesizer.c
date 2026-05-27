@@ -95,13 +95,8 @@ static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 
 		setEnvelopeAttackTime(synthesizer->envelope, convertNormalizedPotentiometerToTime(attackPotentiometerFiltered));
 		setEnvelopeDecayTime(synthesizer->envelope, convertNormalizedPotentiometerToTime(decayPotentiometerFiltered));
-		setEnvelopeSustainLevel(synthesizer->envelope, convertNormalizedPotentiometerToTime(sustainPotentiometerFiltered));
+		setEnvelopeSustainLevel(synthesizer->envelope, sustainPotentiometerFiltered);
 		setEnvelopeReleaseTime(synthesizer->envelope, convertNormalizedPotentiometerToTime(releasePotentiometerFiltered));
-
-//		setEnvelopeAttackTime(synthesizer->envelope, 2.0f );
-//		setEnvelopeDecayTime(synthesizer->envelope, 2.0f);
-//		setEnvelopeSustainLevel(synthesizer->envelope, 2.0f);
-//		setEnvelopeReleaseTime(synthesizer->envelope, 2.0f);
 
 		scanWaveformsSwitches(synthesizer->userInterface);
 		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);
