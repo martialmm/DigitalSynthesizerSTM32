@@ -40,7 +40,7 @@ The device is designed as a desktop module (no built-in keyboard) and is control
 - Sustain.
 - Release.
 
-### FX (just for fast prototyping due to memeory limitations of this mcu)
+### FX (just for fast prototyping due to memory limitations for this specific mcu)
 #### Reverb
 - ON/OFF toggle.
 - High-Pass.
