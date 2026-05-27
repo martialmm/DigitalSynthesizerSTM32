@@ -51,20 +51,13 @@
 #define POT_DELAY_DRYWET		20
 #define POT_MASTER_VOLUME		21
 
-
-typedef struct {
-	float alpha; // [0..1]: 0 ==> max filtering / 1 ==> no filtering
-	float output;
-} LowPassFilter_EMA_t;
-
-
 typedef struct UserInterface UserInterface_t;
 
 UserInterface_t* createUserInterface(void);
 void userInterfaceRegister(UserInterface_t* userInterface);
 void initUserInterface(UserInterface_t* userInterface);
 
-float processAudioPotentiometer(uint16_t potentiometerRawValue);
+float processAudioPotentiometer(UserInterface_t* userInterface, uint8_t potentiometer);
 Waveform_t getUserWaveform(UserInterface_t* userInterface);
 void selectWaveformsMuxChannel(uint8_t channel);
 void scanPushButtonsInputsForNotes(UserInterface_t* userInterface);

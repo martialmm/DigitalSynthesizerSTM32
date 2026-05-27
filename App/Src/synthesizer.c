@@ -62,7 +62,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim){
 // ---- PRIVATE FUNCTION ---- //
 
 static void updateSynthesizerOscillatorsState(Synthesizer_t* synthesizer){
-	float oscillatorTargetVolume = processAudioPotentiometer(getPotentiometerRaw(synthesizer->userInterface, POT_OSC1_VOL)); // a bouger dans le scan du timer
+	float oscillatorTargetVolume = processAudioPotentiometer(synthesizer->userInterface, POT_OSC1_VOL); // a bouger dans le scan du timer
 	float oscillatorFrequency = getOscillatorFrequency(synthesizer->oscillator);
 
 	setOscillatorWaveform(synthesizer->oscillator, getUserWaveform(synthesizer->userInterface));
@@ -88,7 +88,20 @@ static void updateSynthesizerParameters(Synthesizer_t* synthesizer){
 		selectWaveformsMuxChannel(getCurrentMuxChannelSelected(synthesizer->userInterface));
 		scanPushButtonsInputsForNotes(synthesizer->userInterface);
 
-		float attackPotentiometerRaw = getPotentiometerRaw(synthesizer->userInterface, POT_ENV_ATTACK); // a bouger dans le scan du timer
+		float attackPotentiometerFiltered  = processAudioPotentiometer(synthesizer->userInterface, POT_ENV_ATTACK);
+		float decayPotentiometerFiltered   = processAudioPotentiometer(synthesizer->userInterface, POT_ENV_DECAY);
+		float sustainPotentiometerFiltered = processAudioPotentiometer(synthesizer->userInterface, POT_ENV_SUSTAIN);
+		float releasePotentiometerFiltered = processAudioPotentiometer(synthesizer->userInterface, POT_ENV_RELEASE);
+
+		setEnvelopeAttackTime(synthesizer->envelope, convertNormalizedPotentiometerToTime(attackPotentiometerFiltered));
+		setEnvelopeDecayTime(synthesizer->envelope, convertNormalizedPotentiometerToTime(decayPotentiometerFiltered));
+		setEnvelopeSustainLevel(synthesizer->envelope, convertNormalizedPotentiometerToTime(sustainPotentiometerFiltered));
+		setEnvelopeReleaseTime(synthesizer->envelope, convertNormalizedPotentiometerToTime(releasePotentiometerFiltered));
+
+//		setEnvelopeAttackTime(synthesizer->envelope, 2.0f );
+//		setEnvelopeDecayTime(synthesizer->envelope, 2.0f);
+//		setEnvelopeSustainLevel(synthesizer->envelope, 2.0f);
+//		setEnvelopeReleaseTime(synthesizer->envelope, 2.0f);
 
 		scanWaveformsSwitches(synthesizer->userInterface);
 		HAL_ADC_Start_DMA(adcForPotentiometers, (uint32_t*)getPotentiometersADCConversionBuffer(synthesizer->userInterface), 3);

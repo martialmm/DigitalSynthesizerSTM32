@@ -8,9 +8,14 @@
 #include "user_interface.h"
 #include "main.h"
 
-static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband);
+static float createDeadbandForPotentiometer(uint32_t potentiometerRawValue, const float potentiometerDeadband);
 static float approximateExpFunction(float linearScaledDeadbandPotentiometer);
-static float lowPassFilterPotentiometerInput(uint16_t linearScaledDeadbandPotentiometer);
+static float lowPassFilterPotentiometerInput(UserInterface_t* userInterface, uint8_t potentiometer);
+
+typedef struct {
+	float alpha; // [0..1]: 0 ==> max filtering / 1 ==> no filtering
+	float output;
+} LowPassFilter_EMA_t;
 
 typedef struct {
 	uint32_t buttonsState;
@@ -20,6 +25,7 @@ typedef struct {
 
 struct UserInterface{
 	UserInputs_t userInputs;
+	LowPassFilter_EMA_t potentiometerFilterEMA[NUMBER_OF_POTS];
 	uint16_t potentiometersADCConversionBuffer[3];
 	volatile uint8_t currentMuxChannelSelected;
 };
@@ -62,7 +68,6 @@ uint32_t getPotentiometerRaw(UserInterface_t* userInterface, uint8_t potentiomet
 uint32_t getButtonsState(UserInterface_t* userInterface){
 	return userInterface->userInputs.buttonsState;
 }
-
 
 // ---- PUBLIC FUNCTIONS ---- //
 
@@ -131,12 +136,13 @@ void scanWaveformsSwitches(UserInterface_t* userInterface) {
 		}
 }
 
-float processAudioPotentiometer(uint16_t potentiometerRawValue){
-	float filtered = lowPassFilterPotentiometerInput(potentiometerRawValue);
-	float normalized = createDeadbandForPotentiometer(filtered, 25.0f);
+float processAudioPotentiometer(UserInterface_t* userInterface, uint8_t potentiometer){
+	uint32_t filteredValue = lowPassFilterPotentiometerInput(userInterface, potentiometer);
+	userInterface->userInputs.potentiometersFiltered[potentiometer] = filteredValue;
 
-	// instead of having linear response, we approximate an exponential response (f(x) = x²) to have a more natural feeling when changing the volume
-	return approximateExpFunction(normalized);
+	float deadbandedPotentiometer = createDeadbandForPotentiometer(filteredValue, 25.0f);
+
+	return approximateExpFunction(deadbandedPotentiometer);
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
@@ -154,7 +160,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 
 // ---- PRIVATE FUNCTIONS ---- //
 
-static float createDeadbandForPotentiometer(uint16_t potentiometerRawValue, const float potentiometerDeadband) {
+static float createDeadbandForPotentiometer(uint32_t potentiometerRawValue, const float potentiometerDeadband) {
 	float linearScaledDeadbandPotentiometer;
 
 	if (potentiometerRawValue < potentiometerDeadband) {
@@ -170,13 +176,12 @@ static float approximateExpFunction(float linearScaledDeadbandPotentiometer) {
 	return linearScaledDeadbandPotentiometer * linearScaledDeadbandPotentiometer;
 }
 
-static float lowPassFilterPotentiometerInput(uint16_t potentiometerValue) {
+static float lowPassFilterPotentiometerInput(UserInterface_t* userInterface, uint8_t potentiometer) {
 	// Filtering ADC inputs with Exponential Moving Average filter
-	static LowPassFilter_EMA_t lowPassFilterEMA;
+	userInterface->potentiometerFilterEMA[potentiometer].alpha = 0.1f;
+	userInterface->potentiometerFilterEMA[potentiometer].output =
+			userInterface->potentiometerFilterEMA[potentiometer].alpha * userInterface->userInputs.potentiometersRaw[potentiometer] +
+			(1 - userInterface->potentiometerFilterEMA[potentiometer].alpha) * userInterface->potentiometerFilterEMA[potentiometer].output;
 
-	// init low pass filter to get clean potentiometer ADC inputs
-	lowPassFilterEMA.alpha = 0.1f;
-
-	lowPassFilterEMA.output = lowPassFilterEMA.alpha * potentiometerValue + (1 - lowPassFilterEMA.alpha) * lowPassFilterEMA.output;
-	return lowPassFilterEMA.output;
+    return userInterface->potentiometerFilterEMA[potentiometer].output;
 }

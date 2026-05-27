@@ -99,6 +99,10 @@ float processSampleEnvelope(Envelope_t* envelope){
 	return envelope->currentLevel;
 }
 
+float convertNormalizedPotentiometerToTime(float potentiometerNormalized){
+	return potentiometerNormalized * MAX_ENVELOPE_TIME_IN_SECONDS;
+}
+
 float getEnvelopeAttackTime(Envelope_t* envelope){
 	return envelope->attackTime;
 }

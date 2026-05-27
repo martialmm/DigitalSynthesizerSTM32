@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #define SAMPLE_RATE 96000
+#define MAX_ENVELOPE_TIME_IN_SECONDS 10.0f
 
 typedef struct Envelope Envelope_t;
 
@@ -25,6 +26,7 @@ typedef enum{
 Envelope_t* createEnvelope(void);
 void initEnvelope(Envelope_t* envelope);
 float processSampleEnvelope(Envelope_t* envelope);
+float convertNormalizedPotentiometerToTime(float potentiometerRaw);
 
 float getEnvelopeAttackTime(Envelope_t* envelope);
 float getEnvelopeDecayTime(Envelope_t* envelope);
